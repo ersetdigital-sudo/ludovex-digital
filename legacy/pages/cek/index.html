@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cek Transaksi — Ludovex Digital</title><link rel="stylesheet" href="/assets/theme.css"><script src="https://cdn.moda.app/runtime-libs/tailwind-browser-4.1.13-index.global.min.js"></script><style data-moda-export-fonts="true">@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-extralight.ttf") format("truetype"); font-style: normal; font-weight: 200; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-extralightitalic.ttf") format("truetype"); font-style: italic; font-weight: 200; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-light.ttf") format("truetype"); font-style: normal; font-weight: 300; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-lightitalic.ttf") format("truetype"); font-style: italic; font-weight: 300; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-regular.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-italic.ttf") format("truetype"); font-style: italic; font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-medium.ttf") format("truetype"); font-style: normal; font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-mediumitalic.ttf") format("truetype"); font-style: italic; font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-semibold.ttf") format("truetype"); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-semibolditalic.ttf") format("truetype"); font-style: italic; font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-bold.ttf") format("truetype"); font-style: normal; font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-bolditalic.ttf") format("truetype"); font-style: italic; font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-extrabold.ttf") format("truetype"); font-style: normal; font-weight: 800; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-extrabolditalic.ttf") format("truetype"); font-style: italic; font-weight: 800; font-display: swap; }</style></head>
+<body>
+<div data-header=""></div>
+<section class="hero-bg"><div class="max-w-3xl mx-auto px-5 pt-12 pb-10 text-center">
+<span class="inline-block w-14 h-14 rounded-2xl text-white p-3.5" style="background:linear-gradient(135deg,#3b4fd8,#7a5cf2)" data-ic="search"></span>
+<h1 class="text-3xl md:text-5xl font-extrabold mt-4 tracking-tight">Cek Transaksi</h1>
+<p class="text-[#6b7394] mt-3">Masukkan kode referensi atau nomor tujuan untuk melihat status &amp; struk.</p>
+<form id="f" class="mt-7 card p-2 flex flex-col sm:flex-row gap-2 shadow-[0_20px_50px_-25px_rgba(30,40,110,.4)]"><input id="q" name="q" class="flex-1 px-4 py-3 outline-none min-w-0" placeholder="REF-LDX12345678 atau 0812…"><button class="btn">Cek Status</button></form>
+</div></section>
+<main class="max-w-3xl mx-auto px-5 py-10 min-h-[40vh]">
+<div id="res"></div>
+<div class="mt-10"><div class="flex justify-between items-center"><h2 class="font-extrabold text-xl">Riwayat di perangkat ini</h2><a href="/bayar" class="text-sm font-bold text-[#3b4fd8]">+ Transaksi baru</a></div><div id="hist" class="mt-4 space-y-3"></div></div>
+</main>
+<div data-footer=""></div>
+<script src="/assets/main.js"></script>
+<script>
+const $=x=>document.getElementById(x);
+const fmt=t=>new Date(t).toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'});
+const svcId=n=>(SVC.find(s=>s.n===n)||SVC[0]).id;
+function card(t){return `<button data-ref="${t.ref}" class="card w-full p-4 flex items-center gap-4 text-left hover:border-[#c3c9f3] transition"><span class="t-${(SVC.find(s=>s.n===t.svc)||SVC[0]).t} rounded-xl p-2.5 w-11 h-11 shrink-0">${ic(svcId(t.svc),'w-full h-full')}</span><div class="flex-1 min-w-0"><div class="font-bold truncate">${t.prod}</div><div class="text-xs text-[#6b7394] truncate">${t.no} · ${fmt(t.time)}</div></div><div class="text-right shrink-0"><div class="font-extrabold text-sm">${rp(t.total)}</div><span class="badge ${t.status==='Sukses'?'b-ok':'b-wait'} mt-1">${t.status==='Sukses'?'Sukses':'Sedang dicek'}</span></div></button>`}
+function detail(t){const steps=['Pesanan dibuat','Pembayaran dikonfirmasi pelanggan','Verifikasi pembayaran','Transaksi sukses'];const done=t.status==='Sukses'?4:2;
+return `<div class="card overflow-hidden"><div class="p-6 flex flex-wrap justify-between gap-3 items-start border-b border-[#eceefa]"><div><div class="text-xs text-[#6b7394]">Kode referensi</div><div class="font-mono font-extrabold text-lg">${t.ref}</div></div><span class="badge ${t.status==='Sukses'?'b-ok':'b-wait'}">● ${t.status==='Sukses'?'Sukses':'Sedang dicek'}</span></div>
+<div class="p-6 grid md:grid-cols-2 gap-8"><div class="space-y-3 text-sm">${[['Layanan',t.svc],['Produk',t.prod],['Nomor tujuan',t.no],['Metode',t.method],[/PLN/.test(t.svc)?'Token':'Serial number',t.sn],['Total',rp(t.total)]].map(r=>`<div class="flex justify-between gap-3"><span class="text-[#6b7394]">${r[0]}</span><b class="text-right">${r[1]}</b></div>`).join('')}</div>
+<ol class="relative border-l-2 border-[#dfe2f5] ml-2 space-y-5">${steps.map((s,i)=>`<li class="pl-5 relative"><span class="absolute -left-[9px] top-0.5 w-4 h-4 rounded-full ${i<done?'bg-[#3b4fd8] ring-4 ring-[#e8ebff]':i===done?'bg-[#f5a623] ring-4 ring-[#fff3dc] animate-pulse':'bg-[#dfe2f5]'}"></span><div class="font-semibold text-sm ${i>done?'text-[#9aa1c2]':''}">${s}</div><div class="text-xs text-[#6b7394]">${i<done?fmt(new Date(t.time).getTime()+i*15000):i===done?'Sedang berlangsung…':'Menunggu'}</div></li>`).join('')}</ol></div></div>`}
+function demoTx(k){let h=0;for(const c of k)h=(h*31+c.charCodeAt(0))%1e9;const S=SVC[h%SVC.length];const it=S.items?S.items[h%S.items.length]:['Tagihan '+S.n,(h%40+8)*5000];
+const isRef=k.startsWith('REF');return{ref:isRef?(k.includes('-')?k:k.replace('REF','REF-')):'REF-LDX'+String(h).padStart(8,'0').slice(-8),svc:S.n,prod:it[0],no:isRef?'0812****'+String(h).slice(-4):k,method:['QRIS','DANA','OVO','GoPay'][h%4],total:it[1],time:new Date(Date.now()-(h%720)*60000).toISOString(),status:'Sukses',sn:/PLN/.test(S.n)?String(h).padStart(20,'7').slice(0,20).replace(/(\d{4})(?=\d)/g,'$1-'):'SN'+String(h).padStart(10,'0')}}
+function render(){const all=TX.all();$('hist').innerHTML=all.length?all.map(card).join(''):`<div class="card p-8 text-center text-[#6b7394]">Belum ada transaksi di perangkat ini.<br><a href="/bayar" class="btn mt-4">Mulai Transaksi</a></div>`}
+function search(q){q=(q||'').trim();if(!q){$('res').innerHTML='';return}const k=q.replace(/\s/g,'').toUpperCase();
+let hits=TX.all().filter(t=>t.ref.toUpperCase()===k||t.no.replace(/\s/g,'')===k);
+if(!hits.length&&(/^REF-?LDX\d{6,}$/.test(k)||/^(\+?62|0)8\d{7,12}$/.test(k)||/^\d{8,16}$/.test(k)))hits=[demoTx(k)];
+$('res').innerHTML=!hits.length?`<div class="card p-8 text-center"><div class="text-4xl">🔍</div><div class="font-bold mt-2">Transaksi tidak ditemukan</div><p class="text-sm text-[#6b7394] mt-1">Periksa lagi kode referensi atau nomor tujuan. Butuh bantuan? Hubungi CS 24 jam.</p></div>`
+:hits.length===1?detail(hits[0]):`<div class="font-bold mb-3">${hits.length} transaksi ditemukan</div><div class="space-y-3">${hits.map(card).join('')}</div>`}
+$('f').onsubmit=e=>{e.preventDefault();search($('q').value)};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ref]');if(b){$('q').value=b.dataset.ref;search(b.dataset.ref);window.scrollTo({top:0,behavior:'smooth'})}});
+let q0=new URLSearchParams(location.search).get('q');try{q0=q0||localStorage.getItem('ldx_q');localStorage.removeItem('ldx_q')}catch(e){}if(q0){$('q').value=q0;search(q0)}render();
+</script></body></html>

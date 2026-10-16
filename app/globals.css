@@ -1,0 +1,245 @@
+@import "tailwindcss" source(none);
+
+@source "../app";
+@source "../components";
+@source "../data";
+@source "../lib";
+
+@theme {
+  --color-ink: #16204a;
+  --color-muted: #6b7394;
+  --color-brand: #3b4fd8;
+  --color-brand-2: #6d5cf0;
+  --color-line: #e7e9f5;
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: #f4f6fd;
+    color: var(--color-ink);
+    font-family: var(--font-jakarta), system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  /* Tombol utama */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.8rem 1.6rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #3b4fd8, #6d5cf0);
+    color: #fff;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    box-shadow: 0 10px 24px -10px rgba(59, 79, 216, 0.7);
+  }
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    transform: none;
+    cursor: not-allowed;
+  }
+  .btn-ghost {
+    background: #fff;
+    color: #3b4fd8;
+    border: 1.5px solid #cdd3f5;
+    box-shadow: none;
+  }
+  .btn-white {
+    background: #fff;
+    color: #3b4fd8;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e7e9f5;
+    border-radius: 22px;
+  }
+
+  /* Kartu layanan di grid homepage */
+  .svc {
+    border-radius: 20px;
+    padding: 1.6rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .svc:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px -14px rgba(22, 32, 74, 0.35);
+  }
+  .svc svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  .t-blue {
+    background: #e2efff;
+    color: #2a4fd0;
+  }
+  .t-purple {
+    background: #ebe7ff;
+    color: #5b46d6;
+  }
+  .t-green {
+    background: #dcf5ec;
+    color: #16835e;
+  }
+  .t-peach {
+    background: #ffeadb;
+    color: #c25a17;
+  }
+
+  .hero-bg {
+    background:
+      radial-gradient(50% 70% at 0% 10%, #e4e0ff 0, transparent 60%),
+      radial-gradient(50% 70% at 100% 20%, #d9ecff 0, transparent 60%),
+      linear-gradient(#f7f8ff, #f4f6fd);
+  }
+  .dotgrid {
+    background-image: radial-gradient(#c9cff7 1.2px, transparent 1.2px);
+    background-size: 18px 18px;
+  }
+
+  .opt {
+    border: 1.5px solid #e7e9f5;
+    border-radius: 14px;
+    padding: 0.9rem;
+    cursor: pointer;
+    background: #fff;
+    text-align: left;
+    transition: 0.15s;
+  }
+  .opt:hover {
+    border-color: #c3c9f3;
+  }
+  .opt.active {
+    border-color: #3b4fd8;
+    background: #f0f2ff;
+    box-shadow: 0 0 0 3px rgba(59, 79, 216, 0.12);
+  }
+
+  input.field {
+    width: 100%;
+    border: 1.5px solid #e7e9f5;
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+    font-size: 1.05rem;
+    outline: none;
+    background: #fff;
+  }
+  input.field:focus {
+    border-color: #3b4fd8;
+    box-shadow: 0 0 0 3px rgba(59, 79, 216, 0.12);
+  }
+
+  /* Stepper transaksi */
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 600;
+    color: #9aa1c2;
+    font-size: 0.9rem;
+  }
+  .step .n {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    border: 2px solid #d6daf2;
+    background: #fff;
+    font-size: 0.85rem;
+  }
+  .step.on {
+    color: #16204a;
+  }
+  .step.on .n {
+    border-color: #3b4fd8;
+    color: #3b4fd8;
+  }
+  .step.done .n {
+    background: #3b4fd8;
+    border-color: #3b4fd8;
+    color: #fff;
+  }
+  .bar {
+    flex: 1;
+    height: 2px;
+    background: #dfe2f5;
+    border-radius: 2px;
+  }
+  .bar.done {
+    background: #3b4fd8;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .b-ok {
+    background: #dcf5ec;
+    color: #16835e;
+  }
+  .b-wait {
+    background: #fff3dc;
+    color: #b7700b;
+  }
+
+  /* Accordion bantuan */
+  .acc summary {
+    list-style: none;
+  }
+  .acc summary::-webkit-details-marker {
+    display: none;
+  }
+  .acc[open] .chev {
+    transform: rotate(45deg);
+  }
+  .chev {
+    transition: transform 0.2s;
+  }
+  .topic.active {
+    border-color: #3b4fd8;
+    background: #f0f2ff;
+  }
+
+  /* Halaman legal / tentang */
+  .prose h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 2rem 0 0.6rem;
+  }
+  .prose p,
+  .prose li {
+    color: #4b5375;
+    line-height: 1.75;
+  }
+  .prose ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin: 0.5rem 0;
+  }
+  .prose li {
+    margin: 0.3rem 0;
+  }
+}

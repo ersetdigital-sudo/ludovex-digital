@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ludovex Digital — Semua pembayaran digital, satu tempat</title><link rel="stylesheet" href="/assets/theme.css"><script src="https://cdn.moda.app/runtime-libs/tailwind-browser-4.1.13-index.global.min.js"></script><style data-moda-export-fonts="true">@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-extralight.ttf") format("truetype"); font-style: normal; font-weight: 200; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-extralightitalic.ttf") format("truetype"); font-style: italic; font-weight: 200; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-light.ttf") format("truetype"); font-style: normal; font-weight: 300; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-lightitalic.ttf") format("truetype"); font-style: italic; font-weight: 300; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-regular.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-italic.ttf") format("truetype"); font-style: italic; font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-medium.ttf") format("truetype"); font-style: normal; font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-mediumitalic.ttf") format("truetype"); font-style: italic; font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-semibold.ttf") format("truetype"); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-semibolditalic.ttf") format("truetype"); font-style: italic; font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-bold.ttf") format("truetype"); font-style: normal; font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-bolditalic.ttf") format("truetype"); font-style: italic; font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-extrabold.ttf") format("truetype"); font-style: normal; font-weight: 800; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../fonts/plusjakartasans-extrabolditalic.ttf") format("truetype"); font-style: italic; font-weight: 800; font-display: swap; }</style></head>
+<body>
+<div data-header=""></div>
+
+<section class="hero-bg relative overflow-hidden">
+<div class="dotgrid absolute right-0 top-10 w-72 h-72 opacity-60 hidden md:block"></div>
+<div class="max-w-6xl mx-auto px-5 pt-12 pb-16 md:py-16 grid md:grid-cols-[1.05fr_1fr] gap-12 items-center relative">
+<div>
+<h1 class="text-[2.6rem] leading-[1.05] md:text-[3.9rem] font-extrabold tracking-tight">Semua pembayaran digital. <span class="bg-gradient-to-r from-[#3b4fd8] to-[#7a5cf2] bg-clip-text text-transparent">Satu tempat.</span></h1>
+<p class="mt-5 text-lg text-[#6b7394] max-w-md">Isi pulsa, beli token listrik, bayar tagihan, dan top up e-wallet dalam hitungan detik. Tanpa daftar, struk langsung terbit.</p>
+<form action="/bayar" onsubmit="event.preventDefault();var r={pulsa:'pulsa',data:'data',pln:'pln',pdam:'pdam',bpjs:'bpjs',inet:'internet',wallet:'ewallet',fin:'multifinance'}[this.layanan.value];try{localStorage.setItem('ldx_no',this.no.value)}catch(e){}location.href='/'+r" class="mt-8 card p-2 flex flex-col sm:flex-row gap-2 max-w-lg shadow-[0_20px_50px_-25px_rgba(30,40,110,.4)]">
+<select name="layanan" class="sm:w-40 rounded-xl bg-[#f4f6fd] px-3 py-3 font-semibold text-sm outline-none"><option value="pulsa">Pulsa</option><option value="data">Paket Data</option><option value="pln">Token PLN</option><option value="wallet">E-Wallet</option><option value="pdam">PDAM</option><option value="bpjs">BPJS</option><option value="inet">Internet &amp; TV</option><option value="fin">Multifinance</option></select>
+<input name="no" inputmode="numeric" placeholder="Masukkan nomor / ID pelanggan" class="flex-1 px-3 py-3 outline-none text-sm min-w-0">
+<button class="btn !py-3">Lanjut</button></form>
+<div class="mt-7 flex items-center gap-4"><div class="flex -space-x-2"><span class="w-9 h-9 rounded-full border-2 border-white bg-[#c7d2fe]"></span><span class="w-9 h-9 rounded-full border-2 border-white bg-[#ddd6fe]"></span><span class="w-9 h-9 rounded-full border-2 border-white bg-[#a7f3d0]"></span><span class="w-9 h-9 rounded-full border-2 border-white bg-[#3b4fd8] text-white text-[10px] font-bold grid place-items-center">+1jt</span></div>
+<div class="text-sm"><div class="font-bold flex items-center gap-1"><span class="w-4 h-4 text-[#f5b301]" data-ic="star"></span>4.9 dari pengguna</div><div class="text-[#6b7394]">Transaksi diproses rata-rata &lt; 1 menit</div></div></div>
+</div>
+
+<div class="relative">
+<div class="absolute -inset-6 rounded-full bg-gradient-to-br from-[#c9c2ff] to-[#bfe0ff] blur-3xl opacity-60"></div>
+<div class="relative rounded-[28px] p-7 md:p-8 text-white overflow-hidden shadow-[0_40px_80px_-35px_rgba(30,40,110,.7)]" style="background:linear-gradient(135deg,#3b4fd8 0%,#6d5cf0 60%,#8f6cf7 100%)">
+<div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-white/10"></div><div class="absolute right-10 bottom-[-60px] w-40 h-40 rounded-full bg-white/10"></div>
+<div class="relative flex justify-between items-start"><span class="text-xs font-bold tracking-widest uppercase text-white/75">Promo Oktober</span><span class="px-3 py-1 rounded-full bg-[#7ff0c6] text-[#0d4d39] text-xs font-extrabold">Pengguna baru</span></div>
+<div class="relative mt-4 text-[13px] font-semibold text-white/80">Cashback hingga</div>
+<div class="relative text-6xl md:text-7xl font-extrabold leading-none tracking-tight">20<span class="text-4xl align-top">%</span></div>
+<div class="relative mt-2 text-lg font-bold">untuk transaksi pertamamu</div>
+<p class="relative text-sm text-white/75 mt-1">Berlaku pulsa, paket data &amp; token PLN. Maks. Rp20.000.</p>
+<div class="relative mt-6 flex items-center gap-3 flex-wrap"><div class="flex items-center rounded-xl border-2 border-dashed border-white/50 bg-white/10 pl-4 pr-1.5 py-1.5 gap-3"><span class="font-mono font-extrabold tracking-wider">LUDOBARU</span><button type="button" onclick="ldxCopy(this)" class="bg-white text-[#3b4fd8] text-xs font-bold rounded-lg px-3 py-2 cursor-pointer hover:bg-[#eef0ff] active:scale-95 transition">Salin</button></div><a href="/bayar?voucher=LUDOBARU" class="font-bold text-sm underline underline-offset-4">Pakai sekarang →</a></div>
+</div>
+<div class="relative grid grid-cols-2 gap-4 mt-4">
+<a href="/pln" class="card p-5 hover:-translate-y-1 transition"><div class="flex items-center gap-2"><span class="t-green rounded-xl p-2 w-10 h-10" data-ic="pln"></span><span class="badge b-ok">Hemat</span></div><div class="mt-3 font-extrabold text-lg leading-tight">Token PLN<br>bebas admin</div><div class="text-xs text-[#6b7394] mt-1">Bayar pakai QRIS</div></a>
+<a href="/data" class="card p-5 hover:-translate-y-1 transition"><div class="flex items-center gap-2"><span class="t-purple rounded-xl p-2 w-10 h-10" data-ic="data"></span><span class="badge b-wait">Flash sale</span></div><div class="mt-3 font-extrabold text-lg leading-tight">Data 12 GB<br><span class="text-[#3b4fd8]">Rp60.000</span></div><div class="text-xs text-[#6b7394] mt-1"><s>Rp72.000</s> · aktif 30 hari</div></a>
+</div></div></div></section>
+
+<div class="bg-white border-y border-[#eceefa]"><div class="max-w-6xl mx-auto px-5 py-5 flex flex-wrap justify-center md:justify-between gap-x-10 gap-y-3 text-sm font-bold text-[#8a91b4]"><span>QRIS</span><span>DANA</span><span>OVO</span><span>GoPay</span><span>ShopeePay</span><span>BCA</span><span>BRI</span><span>Mandiri</span></div></div>
+
+<main class="max-w-6xl mx-auto px-5">
+<section id="layanan" class="py-16"><div class="flex flex-wrap items-end justify-between gap-3"><div><h2 class="text-2xl md:text-3xl font-extrabold">Layanan</h2><p class="text-[#6b7394] mt-1">Pilih layanan, masukkan nomor, bayar. Selesai.</p></div><a href="/bayar" class="text-sm font-bold text-[#3b4fd8]">Lihat semua →</a></div>
+<div data-services="" class="mt-7 grid grid-cols-2 md:grid-cols-4 gap-4"></div></section>
+
+<section id="populer" class="pb-6"><h2 class="text-2xl md:text-3xl font-extrabold">Populer</h2>
+<div class="mt-6 grid md:grid-cols-3 gap-4">
+<div class="card p-5 flex items-center gap-4"><span class="t-blue rounded-xl p-3 w-12 h-12" data-ic="pulsa"></span><div class="flex-1"><div class="font-bold">Pulsa 50.000</div><div class="text-sm text-[#6b7394]">Semua operator</div><div class="font-extrabold text-[#3b4fd8] mt-1">Rp50.500</div></div><a href="/pulsa" class="btn btn-ghost !py-2 !px-4 text-sm">Beli</a></div>
+<div class="card p-5 flex items-center gap-4"><span class="t-purple rounded-xl p-3 w-12 h-12" data-ic="data"></span><div class="flex-1"><div class="font-bold">Data 12 GB</div><div class="text-sm text-[#6b7394]">Aktif 30 hari</div><div class="font-extrabold text-[#3b4fd8] mt-1">Rp60.000</div></div><a href="/data" class="btn btn-ghost !py-2 !px-4 text-sm">Beli</a></div>
+<div class="card p-5 flex items-center gap-4"><span class="t-green rounded-xl p-3 w-12 h-12" data-ic="pln"></span><div class="flex-1"><div class="font-bold">Token PLN 100.000</div><div class="text-sm text-[#6b7394]">Token langsung masuk</div><div class="font-extrabold text-[#3b4fd8] mt-1">Rp101.500</div></div><a href="/pln" class="btn btn-ghost !py-2 !px-4 text-sm">Beli</a></div></div></section>
+
+<section id="alur" class="py-16"><div class="text-center"><h2 class="text-2xl md:text-4xl font-extrabold">Alur transaksi, cuma 4 langkah</h2><p class="text-[#6b7394] mt-2">Dari pilih layanan sampai struk terbit, semua dalam satu halaman.</p></div>
+<div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-5 relative">
+<div class="hidden lg:block absolute top-9 left-[12%] right-[12%] h-0.5 bg-gradient-to-r from-[#c9cff7] via-[#8a6cf7] to-[#c9cff7]"></div>
+<div class="card p-6 relative"><div class="w-12 h-12 rounded-2xl text-white grid place-items-center font-extrabold" style="background:linear-gradient(135deg,#3b4fd8,#7a5cf2)">1</div><h3 class="font-bold text-lg mt-4">Pilih layanan</h3><p class="text-[#6b7394] mt-1 text-sm">Pulsa, data, PLN, e-wallet, atau tagihan bulanan.</p></div>
+<div class="card p-6 relative"><div class="w-12 h-12 rounded-2xl text-white grid place-items-center font-extrabold" style="background:linear-gradient(135deg,#3b4fd8,#7a5cf2)">2</div><h3 class="font-bold text-lg mt-4">Isi nomor &amp; nominal</h3><p class="text-[#6b7394] mt-1 text-sm">Nomor HP, ID pelanggan, atau cek tagihan otomatis.</p></div>
+<div class="card p-6 relative"><div class="w-12 h-12 rounded-2xl text-white grid place-items-center font-extrabold" style="background:linear-gradient(135deg,#3b4fd8,#7a5cf2)">3</div><h3 class="font-bold text-lg mt-4">Bayar</h3><p class="text-[#6b7394] mt-1 text-sm">Scan QRIS, e-wallet, atau virtual account bank.</p></div>
+<div class="card p-6 relative"><div class="w-12 h-12 rounded-2xl bg-[#16835e] text-white grid place-items-center p-3" data-ic="check"></div><h3 class="font-bold text-lg mt-4">Struk terbit</h3><p class="text-[#6b7394] mt-1 text-sm">Simpan kode referensi, pantau di Cek Transaksi.</p></div></div></section>
+
+<section class="pb-16"><div class="card p-6 md:p-10 grid md:grid-cols-[1fr_1.1fr] gap-8 items-center overflow-hidden relative">
+<div><span class="badge b-wait">Lacak pesanan</span><h2 class="text-2xl md:text-3xl font-extrabold mt-3">Cek status transaksimu kapan saja</h2><p class="text-[#6b7394] mt-2">Masukkan kode referensi (REF-LDX…) atau nomor tujuan untuk melihat status dan struk.</p></div>
+<form action="/cek" onsubmit="event.preventDefault();try{localStorage.setItem('ldx_q',this.q.value)}catch(e){}location.href='/cek'" class="flex flex-col sm:flex-row gap-2"><input name="q" class="field" placeholder="REF-LDX12345678 atau 0812…"><button class="btn shrink-0">Cek Status</button></form></div></section>
+
+<section id="faq" class="pb-16 max-w-3xl mx-auto"><h2 class="text-2xl md:text-3xl font-extrabold text-center">Pertanyaan umum</h2>
+<div class="mt-6 card divide-y divide-[#e7e9f5]">
+<details class="p-5"><summary class="font-semibold cursor-pointer">Berapa lama transaksi diproses?</summary><p class="text-[#6b7394] mt-2">Umumnya kurang dari 1 menit setelah pembayaran terkonfirmasi.</p></details>
+<details class="p-5"><summary class="font-semibold cursor-pointer">Metode pembayaran apa saja?</summary><p class="text-[#6b7394] mt-2">QRIS, DANA, OVO, GoPay, ShopeePay, dan virtual account bank.</p></details>
+<details class="p-5"><summary class="font-semibold cursor-pointer">Bagaimana cara cek status transaksi?</summary><p class="text-[#6b7394] mt-2">Buka menu Cek Transaksi lalu masukkan kode referensi atau nomor tujuan.</p></details>
+<details class="p-5"><summary class="font-semibold cursor-pointer">Bagaimana jika transaksi gagal?</summary><p class="text-[#6b7394] mt-2">Dana dikembalikan otomatis, dan CS kami siap membantu 24 jam.</p></details></div></section>
+</main>
+
+<section class="px-5 pb-16"><div class="max-w-6xl mx-auto rounded-[28px] p-10 md:p-14 text-white text-center relative overflow-hidden" style="background:linear-gradient(135deg,#3b4fd8,#6d5cf0)">
+<div class="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white/10"></div><div class="absolute -left-8 -bottom-12 w-40 h-40 rounded-full bg-white/10"></div>
+<h2 class="text-3xl md:text-4xl font-extrabold relative">Bayar apa pun, kapan pun.</h2><p class="mt-3 text-white/80 relative">Mulai transaksi pertamamu sekarang, tanpa ribet.</p>
+<a href="/bayar" class="btn btn-white mt-7 relative">Mulai Sekarang</a></div></section>
+<div data-footer=""></div>
+<script src="/assets/main.js"></script>
+<script>function ldxCopy(b){const c='LUDOBARU';const done=()=>{b.textContent='Tersalin ✓';setTimeout(()=>b.textContent='Salin',2000)};try{localStorage.setItem('ldx_voucher',c)}catch(e){}
+const fb=()=>{const t=document.createElement('textarea');t.value=c;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(e){}t.remove();done()};
+if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c).then(done,fb);else fb()}</script>
+</body></html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bayar — Ludovex Digital</title><link rel="stylesheet" href="/assets/theme.css"><script src="https://cdn.moda.app/runtime-libs/tailwind-browser-4.1.13-index.global.min.js"></script><style data-moda-export-fonts="true">@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-extralight.ttf") format("truetype"); font-style: normal; font-weight: 200; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-extralightitalic.ttf") format("truetype"); font-style: italic; font-weight: 200; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-light.ttf") format("truetype"); font-style: normal; font-weight: 300; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-lightitalic.ttf") format("truetype"); font-style: italic; font-weight: 300; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-regular.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-italic.ttf") format("truetype"); font-style: italic; font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-medium.ttf") format("truetype"); font-style: normal; font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-mediumitalic.ttf") format("truetype"); font-style: italic; font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-semibold.ttf") format("truetype"); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-semibolditalic.ttf") format("truetype"); font-style: italic; font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-bold.ttf") format("truetype"); font-style: normal; font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-bolditalic.ttf") format("truetype"); font-style: italic; font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-extrabold.ttf") format("truetype"); font-style: normal; font-weight: 800; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url("../../fonts/plusjakartasans-extrabolditalic.ttf") format("truetype"); font-style: italic; font-weight: 800; font-display: swap; }</style></head>
+<body>
+<div data-header=""></div>
+<main class="max-w-6xl mx-auto px-5 py-8 md:py-12">
+<div class="flex items-center gap-4"><span id="hIc" class="hidden rounded-2xl p-3 w-14 h-14 shrink-0"></span><div><h1 id="hT" class="text-3xl md:text-4xl font-extrabold">Transaksi</h1><a id="hBack" href="/#layanan" class="hidden text-sm font-semibold text-[#3b4fd8]">← Ganti layanan</a></div></div>
+<div class="mt-6 card px-5 py-4 flex items-center gap-3">
+<div class="step" id="st1"><span class="n">1</span><span class="hidden sm:inline">Isi data</span></div><div class="bar" id="br1"></div>
+<div class="step" id="st2"><span class="n">2</span><span class="hidden sm:inline">Pembayaran</span></div><div class="bar" id="br2"></div>
+<div class="step" id="st3"><span class="n">3</span><span class="hidden sm:inline">Verifikasi</span></div></div>
+
+<!-- STEP 1 -->
+<section id="v1" class="mt-6">
+<div id="tabs" class="flex gap-2 overflow-x-auto pb-2"></div>
+<div class="mt-4 grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+<div class="card p-6 md:p-8 space-y-7">
+<div><label id="flabel" class="font-bold block mb-2"></label><div class="relative"><input id="num" class="field !pr-36" inputmode="numeric"><span id="op" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-extrabold text-white"></span></div><p id="opHint" class="hidden text-xs text-[#6b7394] mt-2"></p><p id="err" class="text-red-500 text-sm mt-2 hidden">Mohon isi nomor dengan benar (min. 8 digit).</p></div>
+<div><div class="font-bold mb-3" id="nomTitle">Pilih nominal</div><div id="noms" class="grid grid-cols-2 gap-3"></div></div>
+<div><div class="font-bold mb-3">Metode pembayaran</div><div id="pays" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div></div>
+</div>
+<aside class="card p-6 lg:sticky lg:top-24"><div class="font-bold text-lg">Ringkasan</div>
+<dl class="mt-4 space-y-3 text-sm"><div class="flex justify-between gap-3"><dt class="text-[#6b7394]">Layanan</dt><dd id="sL" class="font-semibold"></dd></div>
+<div class="flex justify-between gap-3"><dt class="text-[#6b7394]">Nomor</dt><dd id="sN" class="font-semibold">-</dd></div>
+<div class="flex justify-between gap-3"><dt class="text-[#6b7394]">Produk</dt><dd id="sP" class="font-semibold text-right">-</dd></div>
+<div class="flex justify-between gap-3"><dt class="text-[#6b7394]">Metode</dt><dd id="sM" class="font-semibold">QRIS</dd></div>
+<div class="flex justify-between gap-3"><dt class="text-[#6b7394]">Biaya admin</dt><dd id="sA" class="font-semibold">Rp0</dd></div></dl>
+<div class="mt-5"><label class="text-sm font-bold block mb-2">Kode voucher</label><div class="flex gap-2"><input id="vIn" class="field !py-2.5 !text-sm uppercase font-mono" placeholder="Contoh: LUDOBARU"><button type="button" id="vBtn" class="btn btn-ghost !py-2 !px-4 text-sm shrink-0">Pakai</button></div><p id="vMsg" class="text-xs mt-2 hidden"></p></div>
+<div id="vRow" class="hidden mt-3 text-sm flex justify-between"><span class="text-[#16835e] font-semibold">Diskon voucher</span><b id="sD" class="text-[#16835e]"></b></div>
+<div class="border-t border-dashed border-[#d9dcf0] my-5"></div>
+<div class="flex justify-between items-end"><span class="text-[#6b7394]">Total</span><span id="sT" class="text-2xl font-extrabold text-[#3b4fd8]">Rp0</span></div>
+<button id="go" class="btn w-full mt-6">Lanjut ke Pembayaran</button>
+<p class="text-xs text-[#6b7394] mt-3 text-center">Mode demo, belum terhubung ke payment gateway.</p></aside>
+</div></section>
+
+<!-- STEP 2 -->
+<section id="v2" class="mt-6 hidden"><div class="max-w-xl mx-auto card p-6 md:p-8 text-center">
+<div class="flex justify-between items-center text-sm"><span class="badge b-wait">Menunggu pembayaran</span><span class="font-semibold text-[#6b7394]">Sisa waktu <b id="cd" class="text-[#16204a]">15:00</b></span></div>
+<div class="mt-6 text-[#6b7394] text-sm">Total pembayaran</div><div id="pTot" class="text-3xl font-extrabold text-[#3b4fd8]"></div>
+<div id="payBox" class="mt-6"></div>
+<div class="mt-5 text-left bg-[#f4f6fd] rounded-2xl p-4 text-sm space-y-1.5"><div class="flex justify-between"><span class="text-[#6b7394]">Produk</span><b id="pP"></b></div><div class="flex justify-between"><span class="text-[#6b7394]">Nomor tujuan</span><b id="pN"></b></div><div class="flex justify-between"><span class="text-[#6b7394]">Kode referensi</span><b id="pR" class="font-mono"></b></div></div>
+<button id="paid" class="btn w-full mt-6">Saya Sudah Bayar</button>
+<button id="back" class="w-full mt-3 text-sm font-semibold text-[#6b7394]">← Ubah pesanan</button></div></section>
+
+<!-- STEP 3 -->
+<section id="v3" class="mt-6 hidden"><div class="max-w-md mx-auto card overflow-hidden">
+<div class="p-8 text-center text-white" style="background:linear-gradient(135deg,#3b4fd8,#7a5cf2)"><div class="w-16 h-16 mx-auto rounded-full bg-white text-[#b7700b] p-4 animate-pulse" data-ic="clock"></div><h2 class="text-2xl font-extrabold mt-4">Terima kasih!</h2><p class="text-white/90 mt-1">Pembayaran Anda sedang dalam pengecekan.</p><p class="text-white/70 text-xs mt-2" id="rDate"></p></div>
+<div class="p-6 text-sm space-y-3" id="rcpt"></div>
+<div class="px-6"><a id="waBtn" target="_blank" rel="noopener" class="btn w-full !bg-[#25d366] hover:!bg-[#1ebe5a] !shadow-[0_10px_24px_-10px_rgba(37,211,102,.7)]" style="background:#25d366"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"></path></svg>Konfirmasi via WhatsApp</a><p class="text-xs text-center text-[#6b7394] mt-2 mb-4">Kirim bukti bayar ke CS agar verifikasi lebih cepat.</p></div>
+<div class="px-6 pb-6 grid grid-cols-2 gap-3"><a id="toCek" class="btn btn-ghost">Cek Status</a><a href="/bayar" class="btn">Transaksi Lagi</a></div></div></section>
+</main>
+<div data-footer=""></div>
+<script>window.LDX_FIXED="pdam"</script>
+<script src="/assets/main.js"></script>
+<script>
+const $=x=>document.getElementById(x);
+const PAY=[['QRIS',0,'qr'],['DANA',1000,'ew'],['OVO',1000,'ew'],['GoPay',1000,'ew'],['ShopeePay',1000,'ew'],['Virtual Account',2500,'va']];
+let cur,item=null,pay=0,tx=null,timer,voucher=null;
+const VCH={LUDOBARU:{pct:20,max:20000,only:['pulsa','data','pln'],label:'Cashback 20% (maks. Rp20.000)'},HEMAT5:{flat:5000,min:50000,label:'Potongan Rp5.000 min. Rp50.000'}};
+function disc(){if(!voucher||!item)return 0;const v=VCH[voucher];if(v.only&&!v.only.includes(cur.id))return 0;if(v.min&&item[1]<v.min)return 0;return v.pct?Math.min(Math.round(item[1]*v.pct/100),v.max):v.flat}
+function vInfo(){const m=$('vMsg');if(!voucher){$('vRow').classList.add('hidden');return}const d=disc();m.classList.remove('hidden');
+if(!item){m.className='text-xs mt-2 text-[#6b7394]';m.textContent='Voucher '+voucher+' dipasang. Pilih produk untuk melihat potongan.'}
+else if(d){m.className='text-xs mt-2 text-[#16835e] font-semibold';m.textContent='✓ '+VCH[voucher].label}
+else{const v=VCH[voucher];m.className='text-xs mt-2 text-[#c25a17]';m.textContent=v.only&&!v.only.includes(cur.id)?'Voucher hanya untuk pulsa, paket data & token PLN.':'Minimal transaksi '+rp(v.min)+'.'}
+$('vRow').classList.toggle('hidden',!d);$('sD').textContent='-'+rp(d)}
+function applyV(code){code=(code||'').trim().toUpperCase();const m=$('vMsg');m.classList.remove('hidden');
+if(!code){voucher=null;m.classList.add('hidden');upd();return}
+if(!VCH[code]){voucher=null;m.className='text-xs mt-2 text-red-500';m.textContent='Kode voucher tidak valid.';$('vRow').classList.add('hidden');upd();return}
+voucher=code;$('vIn').value=code;$('vBtn').textContent='Hapus';upd()}
+const qs=new URLSearchParams(location.search);if(window.LDX_FIXED)qs.set('layanan',window.LDX_FIXED);
+(()=>{let v=null,n=null;try{v=sessionStorage.getItem('ldx_svc')||localStorage.getItem('ldx_svc');n=localStorage.getItem('ldx_no')}catch(e){}
+if(!qs.get('layanan')&&v)qs.set('layanan',v);if(!qs.get('no')&&n)qs.set('no',n);try{localStorage.removeItem('ldx_no')}catch(e){}})();
+function step(n){[1,2,3].forEach(i=>{$('v'+i).classList.toggle('hidden',i!==n);$('st'+i).className='step'+(i<n?' done':i===n?' on':'');if(i<3)$('br'+i).className='bar'+(i<n?' done':'')});
+document.querySelectorAll('.step.done .n').forEach(e=>e.innerHTML='✓');document.querySelectorAll('.step:not(.done) .n').forEach((e,k)=>e.textContent=e.parentNode.id.slice(2));window.scrollTo({top:0,behavior:'smooth'})}
+function set(id){cur=SVC.find(s=>s.id===id)||SVC[0];item=null;
+$('tabs').innerHTML=SVC.map(s=>`<button data-id="${s.id}" class="opt !py-2 !px-4 whitespace-nowrap font-semibold text-sm flex items-center gap-2 ${s.id===cur.id?'active':''}">${ic(s.id,'w-5 h-5')}${s.n}</button>`).join('');
+$('flabel').textContent=cur.f;setTimeout(detectOp);$('num').placeholder=cur.ph;
+if(cur.bill){$('nomTitle').textContent='Cek tagihan';$('noms').innerHTML='<button type="button" id="cekB" class="btn btn-ghost col-span-2">Cek Tagihan</button><div id="billBox" class="col-span-2"></div>';
+$('cekB').onclick=()=>{if(!valid())return;$('cekB').textContent='Mengecek…';setTimeout(()=>{const amt=(Math.floor(Math.random()*40)+8)*5000;item=['Tagihan '+cur.n,amt];$('cekB').textContent='Cek Ulang';$('billBox').innerHTML=`<div class="opt active flex justify-between items-center"><span><b>Tagihan bulan ini</b><br><span class="text-xs text-[#6b7394]">a.n. Pelanggan ****${$('num').value.replace(/\D/g,'').slice(-4)}</span></span><b class="text-[#3b4fd8]">${rp(amt)}</b></div>`;upd()},700)}}
+else{$('nomTitle').textContent='Pilih nominal';$('noms').innerHTML=cur.items.map((it,i)=>`<button type="button" data-i="${i}" class="opt"><div class="font-semibold">${it[0]}</div><div class="text-[#3b4fd8] font-bold mt-1">${rp(it[1])}</div></button>`).join('')}
+upd()}
+const OPS=[['Telkomsel','#e4002b',['0811','0812','0813','0821','0822','0823','0851','0852','0853']],['Indosat','#f7b500',['0814','0815','0816','0855','0856','0857','0858']],['XL','#0b4ea2',['0817','0818','0819','0859','0877','0878']],['Axis','#7b2d8e',['0831','0832','0833','0838']],['Tri','#1d1d1b',['0895','0896','0897','0898','0899']],['Smartfren','#e5007e',['0881','0882','0883','0884','0885','0886','0887','0888','0889']],['by.U','#12b7c6',['0851']]];
+function detectOp(){const el=$('op'),h=$('opHint');const isHP=['pulsa','data'].includes(cur.id);let d=$('num').value.replace(/\D/g,'');if(d.startsWith('62'))d='0'+d.slice(2);else if(d.startsWith('8'))d='0'+d;
+if(!isHP||d.length<4){el.classList.add('hidden');el.classList.remove('flex');h.classList.add('hidden');return}
+const o=OPS.find(o=>o[2].includes(d.slice(0,4)));
+if(o){el.style.background=o[1];el.style.color=o[0]==='Indosat'?'#16204a':'#fff';el.innerHTML='<span class="w-4 h-4 rounded-full bg-white/30 grid place-items-center text-[9px]">'+o[0][0]+'</span>'+o[0];el.classList.remove('hidden');el.classList.add('flex');h.classList.add('hidden')}
+else{el.classList.add('hidden');el.classList.remove('flex');h.classList.remove('hidden');h.textContent='Operator tidak dikenali, periksa kembali nomor HP.'}}
+function valid(){const ok=$('num').value.replace(/\D/g,'').length>=8;$('err').classList.toggle('hidden',ok);return ok}
+const total=()=>item?Math.max(0,item[1]+PAY[pay][1]-disc()):0;
+function upd(){$('sL').textContent=cur.n;$('sN').textContent=$('num').value||'-';$('sP').textContent=item?item[0]:'-';$('sM').textContent=PAY[pay][0];$('sA').textContent=rp(item?PAY[pay][1]:0);$('sT').textContent=rp(total());
+$('pays').innerHTML=PAY.map((p,i)=>`<button type="button" data-p="${i}" class="opt ${i===pay?'active':''}"><div class="font-semibold text-sm">${p[0]}</div><div class="text-xs text-[#6b7394]">${p[1]?'Admin '+rp(p[1]):'Gratis admin'}</div></button>`).join('');
+$('go').disabled=!item;if(voucher)vInfo()}
+function qr(){let h='<svg viewBox="0 0 21 21" class="w-48 h-48 mx-auto" shape-rendering="crispEdges">';let s=7;for(let y=0;y<21;y++)for(let x=0;x<21;x++){s=(s*9301+49297)%233280;const f=(x<7&&y<7)||(x>13&&y<7)||(x<7&&y>13);const on=f?((x%14==0||x%14==6||y%14==0||y%14==6)||(x%14>1&&x%14<5&&y%14>1&&y%14<5)):s/233280>.5;if(on)h+=`<rect x="${x}" y="${y}" width="1" height="1" fill="#16204a"/>`}return h+'</svg>'}
+$('tabs').onclick=e=>{const b=e.target.closest('[data-id]');if(b)set(b.dataset.id)};
+$('noms').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;item=cur.items[b.dataset.i];$('noms').querySelectorAll('.opt').forEach(x=>x.classList.toggle('active',x===b));upd()};
+$('pays').onclick=e=>{const b=e.target.closest('[data-p]');if(b){pay=+b.dataset.p;upd()}};
+$('num').oninput=()=>{$('num').value=$('num').value.replace(/[^\d +]/g,'');detectOp();upd()};
+$('go').onclick=()=>{if(!valid()||!item)return;const p=PAY[pay];
+tx={ref:'REF-LDX'+Date.now().toString().slice(-8),svc:cur.n,prod:item[0],no:$('num').value.trim(),method:p[0],admin:p[1],total:total(),disc:disc(),voucher:disc()?voucher:null,time:new Date().toISOString(),status:'Menunggu'};
+$('pTot').textContent=rp(tx.total);$('pP').textContent=tx.prod;$('pN').textContent=tx.no;$('pR').textContent=tx.ref;
+$('payBox').innerHTML=p[2]==='qr'?`<img src="/api/v2/images/ref/bb6d95e9-ff4c-497f-8fca-d26df0eaa737?v=5574e4c704201667" alt="QRIS Ludovex" class="w-full max-w-[300px] mx-auto rounded-2xl border border-[#e7e9f5] shadow-sm"><a href="/api/v2/images/ref/bb6d95e9-ff4c-497f-8fca-d26df0eaa737?v=5574e4c704201667" download="QRIS-Ludovex.png" target="_blank" class="inline-block mt-3 text-sm font-bold text-[#3b4fd8]">⬇ Unduh QRIS</a><div class="mt-3 text-left text-sm bg-[#fff8eb] rounded-xl p-3 text-[#7a4b06]"><b>Penting:</b> scan pakai aplikasi bank/e-wallet, lalu masukkan nominal <b>persis ${rp(tx.total)}</b> agar pembayaran mudah dicek.</div>`
+:p[2]==='va'?`<div class="text-sm text-[#6b7394]">Nomor Virtual Account</div><div class="mt-1 text-2xl font-extrabold font-mono tracking-wider">8808 ${tx.ref.slice(-8,-4)} ${tx.ref.slice(-4)} 21</div><p class="text-sm text-[#6b7394] mt-3">Transfer lewat m-banking / ATM sesuai total di atas.</p>`
+:`<div class="w-16 h-16 mx-auto rounded-2xl t-purple p-4">${ic('wallet','w-full h-full')}</div><p class="text-sm text-[#6b7394] mt-3">Notifikasi pembayaran dikirim ke aplikasi <b>${p[0]}</b> kamu. Buka aplikasi lalu konfirmasi.</p>`;
+let t=900;clearInterval(timer);timer=setInterval(()=>{t--;$('cd').textContent=String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');if(t<=0)clearInterval(timer)},1000);step(2)};
+$('vBtn').onclick=()=>{if(voucher){voucher=null;$('vIn').value='';$('vBtn').textContent='Pakai';$('vMsg').classList.add('hidden');$('vRow').classList.add('hidden');upd()}else applyV($('vIn').value)};
+$('vIn').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('vBtn').click()}};
+$('back').onclick=()=>{clearInterval(timer);step(1)};
+$('paid').onclick=()=>{$('paid').disabled=true;$('paid').textContent='Memverifikasi…';setTimeout(()=>{clearInterval(timer);tx.status='Diproses';
+tx.sn='Dikirim setelah verifikasi';
+TX.save(tx);const d=new Date(tx.time);$('rDate').textContent=d.toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'});
+const row=(a,b,c='')=>`<div class="flex justify-between gap-3"><span class="text-[#6b7394]">${a}</span><b class="text-right ${c}">${b}</b></div>`;
+$('rcpt').innerHTML=row('Status','<span class="badge b-wait">Sedang dicek</span>')+row('Kode referensi',tx.ref,'font-mono')+row('Layanan',tx.svc)+row('Produk',tx.prod)+row('Nomor tujuan',tx.no)+row('Metode',tx.method)+row(/PLN/.test(tx.svc)?'Token':'Serial number',tx.sn,'font-mono text-[#3b4fd8]')+(tx.disc?row('Voucher '+tx.voucher,'-'+rp(tx.disc),'text-[#16835e]'):'')+'<div class="border-t border-dashed border-[#d9dcf0]"></div>'+row('Total dibayar',rp(tx.total),'text-lg text-[#3b4fd8]')+'<p class="text-xs text-[#6b7394] bg-[#fff8eb] rounded-xl p-3 mt-2">Verifikasi biasanya 1–5 menit. Simpan kode referensi dan pantau statusnya di menu Cek Transaksi.</p>';
+$('waBtn').href=waLink(`Halo CS Ludovex Digital, saya ingin konfirmasi pembayaran:\n\nKode referensi: ${tx.ref}\nProduk: ${tx.prod}\nNomor tujuan: ${tx.no}\nMetode: ${tx.method}\nTotal: ${rp(tx.total)}\n\nBukti transfer saya lampirkan. Terima kasih.`);$('toCek').href='/cek?q='+tx.ref;$('toCek').onclick=()=>{try{localStorage.setItem('ldx_q',tx.ref)}catch(e){}};$('paid').disabled=false;$('paid').textContent='Saya Sudah Bayar';step(3)},1200)};
+const fixed=SVC.find(s=>s.id===qs.get('layanan'));set(qs.get('layanan'));
+if(fixed){$('tabs').classList.add('hidden');$('hT').textContent=(fixed.bill?'Bayar ':'Beli ')+fixed.n;document.title=$('hT').textContent+' — Ludovex Digital';$('hIc').className='rounded-2xl p-3 w-14 h-14 shrink-0 t-'+fixed.t;$('hIc').innerHTML=ic(fixed.id,'w-full h-full');$('hBack').classList.remove('hidden')}if(qs.get('no')){$('num').value=qs.get('no');detectOp();upd()}step(1);
+let v0=qs.get('voucher');try{v0=v0||localStorage.getItem('ldx_voucher')}catch(e){}if(v0)applyV(v0);
+</script></body></html>
