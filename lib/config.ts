@@ -15,12 +15,12 @@ export const CS_WA = "6285711172317";
 export const CS_PHONE_DISPLAY = "0857-1117-2317";
 
 /**
- * Gambar QRIS statis.
+ * Gambar QRIS statis (dipakai khusus metode QRIS).
  * Ganti dengan file di public/ (mis. /images/qris.png) atau URL backend kamu.
  * Kalau kosong / gagal dimuat, akan tampil QR placeholder.
  */
 export const QRIS_IMAGE =
-  "/api/v2/images/ref/bb6d95e9-ff4c-497f-8fca-d26df0eaa737?v=5574e4c704201667";
+  "https://res.cloudinary.com/dqjh7utdb/image/upload/v1792161327/camhvfeu1lcm0ps8ieiz.jpg";
 
 export const PAYMENT_METHODS_LABEL = ["QRIS", "DANA", "OVO", "GoPay", "VA Bank"];
 

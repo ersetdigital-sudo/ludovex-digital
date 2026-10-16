@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Icon, type IconName } from "./icon";
 import { QrisBox } from "./qris-box";
-import { OPERATORS, PAY_METHODS, VOUCHERS } from "@/data/payments";
+import { ACTIVE_PAY_METHODS, OPERATORS, VOUCHERS } from "@/data/payments";
 import { SERVICES, type ProductItem, type Service, serviceById } from "@/data/services";
 import { fmtCountdown, fmtDate, rp, waConfirmLink } from "@/lib/format";
 import { getStored, removeStored, saveTx, setStored, type Tx } from "@/lib/tx";
@@ -37,7 +37,7 @@ export function TransactionFlow({
   const [verifying, setVerifying] = useState(false);
 
   const cur: Service = fixedService ?? serviceById(svcId) ?? SERVICES[0];
-  const method = PAY_METHODS[pay];
+  const method = ACTIVE_PAY_METHODS[pay] ?? ACTIVE_PAY_METHODS[0];
   const valid = digits(num).length >= 8;
 
   /** potongan voucher */
@@ -351,7 +351,7 @@ export function TransactionFlow({
               <div>
                 <div className="font-bold mb-3">Metode pembayaran</div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {PAY_METHODS.map((p, i) => (
+                  {ACTIVE_PAY_METHODS.map((p, i) => (
                     <button
                       key={p.name}
                       type="button"

@@ -45,9 +45,9 @@ export function QrisBox({ amount }: { amount: string }) {
         <Image
           src={QRIS_IMAGE}
           alt="QRIS Ludovex"
-          width={300}
-          height={300}
-          unoptimized
+          width={600}
+          height={600}
+          priority
           onError={() => setFailed(true)}
           className="w-full max-w-[300px] h-auto mx-auto rounded-2xl border border-[#e7e9f5] shadow-sm"
         />

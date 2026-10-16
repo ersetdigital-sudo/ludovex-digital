@@ -5,16 +5,21 @@ export type PayMethod = {
   /** biaya admin */
   fee: number;
   type: PayType;
+  /** true = disembunyikan dari pilihan user (bisa dinyalakan lagi nanti) */
+  hidden?: boolean;
 };
 
 export const PAY_METHODS: PayMethod[] = [
   { name: "QRIS", fee: 0, type: "qr" },
-  { name: "DANA", fee: 1000, type: "ew" },
-  { name: "OVO", fee: 1000, type: "ew" },
-  { name: "GoPay", fee: 1000, type: "ew" },
-  { name: "ShopeePay", fee: 1000, type: "ew" },
-  { name: "Virtual Account", fee: 2500, type: "va" },
+  { name: "DANA", fee: 1000, type: "ew", hidden: true },
+  { name: "OVO", fee: 1000, type: "ew", hidden: true },
+  { name: "GoPay", fee: 1000, type: "ew", hidden: true },
+  { name: "ShopeePay", fee: 1000, type: "ew", hidden: true },
+  { name: "Virtual Account", fee: 2500, type: "va", hidden: true },
 ];
+
+/** metode yang tampil di form transaksi (sekarang QRIS saja) */
+export const ACTIVE_PAY_METHODS = PAY_METHODS.filter((m) => !m.hidden);
 
 export type Voucher = {
   /** potongan persen */
