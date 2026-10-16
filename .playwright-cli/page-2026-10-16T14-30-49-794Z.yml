@@ -1,0 +1,228 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - navigation [ref=e3]:
+      - link "Ludovex Digital" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e10]:
+          - generic [ref=e11]: LUDOVEX
+          - generic [ref=e12]: DIGITAL
+      - generic [ref=e13]:
+        - link "Layanan" [ref=e14] [cursor=pointer]:
+          - /url: /#layanan
+        - link "Cara Bayar" [ref=e15] [cursor=pointer]:
+          - /url: /#alur
+        - link "Cek Transaksi" [ref=e16] [cursor=pointer]:
+          - /url: /cek
+        - link "Bantuan" [ref=e17] [cursor=pointer]:
+          - /url: /bantuan
+        - link "Tentang" [ref=e18] [cursor=pointer]:
+          - /url: /tentang
+      - link "Bayar Sekarang" [ref=e20] [cursor=pointer]:
+        - /url: /bayar
+        - text: Bayar
+        - generic [ref=e21]: Sekarang
+  - generic [ref=e24]:
+    - generic [ref=e25]:
+      - heading "Semua pembayaran digital. Satu tempat." [level=1] [ref=e26]
+      - paragraph [ref=e27]: Isi pulsa, beli token listrik, bayar tagihan, dan top up e-wallet dalam hitungan detik. Tanpa daftar, struk langsung terbit.
+      - generic [ref=e28]:
+        - combobox [ref=e29]:
+          - option "Pulsa" [selected]
+          - option "Paket Data"
+          - option "Token PLN"
+          - option "E-Wallet"
+          - option "PDAM"
+          - option "BPJS"
+          - option "Internet & TV"
+          - option "Multifinance"
+        - textbox "Masukkan nomor / ID pelanggan" [ref=e30]
+        - button "Lanjut" [ref=e31]
+      - generic [ref=e32]:
+        - generic [ref=e33]: +1jt
+        - generic [ref=e38]:
+          - generic [ref=e39]: 4.9 dari pengguna
+          - generic [ref=e43]: Transaksi diproses rata-rata < 1 menit
+    - generic [ref=e44]:
+      - generic [ref=e46]:
+        - generic [ref=e49]:
+          - generic [ref=e50]: Promo Oktober
+          - generic [ref=e51]: Pengguna baru
+        - generic [ref=e52]: Cashback hingga
+        - generic [ref=e53]: 20%
+        - generic [ref=e54]: untuk transaksi pertamamu
+        - paragraph [ref=e55]: Berlaku pulsa, paket data & token PLN. Maks. Rp20.000.
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - generic [ref=e58]: LUDOBARU
+            - button "Salin" [ref=e59] [cursor=pointer]
+          - link "Pakai sekarang →" [ref=e60] [cursor=pointer]:
+            - /url: /bayar?voucher=LUDOBARU
+      - generic [ref=e61]:
+        - link "Hemat Token PLN bebas admin Bayar pakai QRIS" [ref=e62] [cursor=pointer]:
+          - /url: /pln
+          - generic [ref=e63]: Hemat
+          - generic [ref=e68]: Token PLNbebas admin
+          - generic [ref=e69]: Bayar pakai QRIS
+        - link "Flash sale Data 12 GB Rp60.000 Rp72.000 · aktif 30 hari" [ref=e70] [cursor=pointer]:
+          - /url: /data
+          - generic [ref=e71]: Flash sale
+          - generic [ref=e79]: Data 12 GBRp60.000
+          - generic [ref=e80]: Rp72.000 · aktif 30 hari
+  - generic [ref=e82]:
+    - generic [ref=e83]: QRIS
+    - generic [ref=e84]: DANA
+    - generic [ref=e85]: OVO
+    - generic [ref=e86]: GoPay
+    - generic [ref=e87]: ShopeePay
+    - generic [ref=e88]: BCA
+    - generic [ref=e89]: BRI
+    - generic [ref=e90]: Mandiri
+  - main [ref=e91]:
+    - generic [ref=e92]:
+      - generic [ref=e93]:
+        - generic [ref=e94]:
+          - heading "Layanan" [level=2] [ref=e95]
+          - paragraph [ref=e96]: Pilih layanan, masukkan nomor, bayar. Selesai.
+        - link "Lihat semua →" [ref=e97] [cursor=pointer]:
+          - /url: /bayar
+      - generic [ref=e98]:
+        - link "Pulsa" [ref=e99] [cursor=pointer]:
+          - /url: /pulsa
+        - link "Paket Data" [ref=e103] [cursor=pointer]:
+          - /url: /data
+        - link "Token PLN" [ref=e110] [cursor=pointer]:
+          - /url: /pln
+        - link "PDAM" [ref=e114] [cursor=pointer]:
+          - /url: /pdam
+        - link "BPJS" [ref=e118] [cursor=pointer]:
+          - /url: /bpjs
+        - link "Internet & TV" [ref=e123] [cursor=pointer]:
+          - /url: /internet
+        - link "E-Wallet" [ref=e128] [cursor=pointer]:
+          - /url: /ewallet
+        - link "Multifinance" [ref=e134] [cursor=pointer]:
+          - /url: /multifinance
+    - generic [ref=e139]:
+      - heading "Populer" [level=2] [ref=e140]
+      - generic [ref=e141]:
+        - generic [ref=e142]:
+          - generic [ref=e146]:
+            - generic [ref=e147]: Pulsa 50.000
+            - generic [ref=e148]: Semua operator
+            - generic [ref=e149]: Rp50.500
+          - link "Beli" [ref=e150] [cursor=pointer]:
+            - /url: /pulsa
+        - generic [ref=e151]:
+          - generic [ref=e158]:
+            - generic [ref=e159]: Data 12 GB
+            - generic [ref=e160]: Aktif 30 hari
+            - generic [ref=e161]: Rp60.000
+          - link "Beli" [ref=e162] [cursor=pointer]:
+            - /url: /data
+        - generic [ref=e163]:
+          - generic [ref=e167]:
+            - generic [ref=e168]: Token PLN 100.000
+            - generic [ref=e169]: Token langsung masuk
+            - generic [ref=e170]: Rp101.500
+          - link "Beli" [ref=e171] [cursor=pointer]:
+            - /url: /pln
+    - generic [ref=e172]:
+      - generic [ref=e173]:
+        - heading "Alur transaksi, cuma 4 langkah" [level=2] [ref=e174]
+        - paragraph [ref=e175]: Dari pilih layanan sampai struk terbit, semua dalam satu halaman.
+      - generic [ref=e176]:
+        - generic [ref=e178]:
+          - generic [ref=e179]: "1"
+          - heading "Pilih layanan" [level=3] [ref=e180]
+          - paragraph [ref=e181]: Pulsa, data, PLN, e-wallet, atau tagihan bulanan.
+        - generic [ref=e182]:
+          - generic [ref=e183]: "2"
+          - heading "Isi nomor & nominal" [level=3] [ref=e184]
+          - paragraph [ref=e185]: Nomor HP, ID pelanggan, atau cek tagihan otomatis.
+        - generic [ref=e186]:
+          - generic [ref=e187]: "3"
+          - heading "Bayar" [level=3] [ref=e188]
+          - paragraph [ref=e189]: Scan QRIS, e-wallet, atau virtual account bank.
+        - generic [ref=e190]:
+          - heading "Struk terbit" [level=3] [ref=e194]
+          - paragraph [ref=e195]: Simpan kode referensi, pantau di Cek Transaksi.
+    - generic [ref=e197]:
+      - generic [ref=e198]:
+        - generic [ref=e199]: Lacak pesanan
+        - heading "Cek status transaksimu kapan saja" [level=2] [ref=e200]
+        - paragraph [ref=e201]: Masukkan kode referensi (REF-LDX…) atau nomor tujuan untuk melihat status dan struk.
+      - generic [ref=e202]:
+        - textbox "REF-LDX12345678 atau 0812…" [ref=e203]
+        - button "Cek Status" [ref=e204]
+    - generic [ref=e205]:
+      - heading "Pertanyaan umum" [level=2] [ref=e206]
+      - generic [ref=e207]:
+        - group [ref=e208]:
+          - generic "Berapa lama transaksi diproses?" [ref=e209] [cursor=pointer]
+        - group [ref=e210]:
+          - generic "Metode pembayaran apa saja?" [ref=e211] [cursor=pointer]
+        - group [ref=e212]:
+          - generic "Bagaimana cara cek status transaksi?" [ref=e213] [cursor=pointer]
+        - group [ref=e214]:
+          - generic "Bagaimana jika transaksi gagal?" [ref=e215] [cursor=pointer]
+  - generic [ref=e217]:
+    - heading "Bayar apa pun, kapan pun." [level=2] [ref=e220]
+    - paragraph [ref=e221]: Mulai transaksi pertamamu sekarang, tanpa ribet.
+    - link "Mulai Sekarang" [ref=e222] [cursor=pointer]:
+      - /url: /bayar
+  - contentinfo [ref=e223]:
+    - generic [ref=e224]:
+      - generic [ref=e225]:
+        - generic [ref=e231]:
+          - generic [ref=e232]: LUDOVEX
+          - generic [ref=e233]: DIGITAL
+        - paragraph [ref=e234]: Platform pembayaran digital untuk pulsa, data, token listrik, dan tagihan bulanan. Cepat, aman, harga bersahabat.
+      - generic [ref=e235]:
+        - generic [ref=e236]: Layanan
+        - list [ref=e237]:
+          - listitem [ref=e238]:
+            - link "Pulsa & Data" [ref=e239] [cursor=pointer]:
+              - /url: /pulsa
+          - listitem [ref=e240]:
+            - link "Token PLN" [ref=e241] [cursor=pointer]:
+              - /url: /pln
+          - listitem [ref=e242]:
+            - link "E-Wallet" [ref=e243] [cursor=pointer]:
+              - /url: /ewallet
+          - listitem [ref=e244]:
+            - link "Tagihan" [ref=e245] [cursor=pointer]:
+              - /url: /bpjs
+      - generic [ref=e246]:
+        - generic [ref=e247]: Bantuan
+        - list [ref=e248]:
+          - listitem [ref=e249]:
+            - link "Cek Transaksi" [ref=e250] [cursor=pointer]:
+              - /url: /cek
+          - listitem [ref=e251]:
+            - link "Pusat Bantuan" [ref=e252] [cursor=pointer]:
+              - /url: /bantuan
+          - listitem [ref=e253]:
+            - link "WhatsApp CS" [ref=e254] [cursor=pointer]:
+              - /url: https://wa.me/6285711172317
+        - generic [ref=e255]: Perusahaan
+        - list [ref=e256]:
+          - listitem [ref=e257]:
+            - link "Tentang Kami" [ref=e258] [cursor=pointer]:
+              - /url: /tentang
+          - listitem [ref=e259]:
+            - link "Kebijakan Privasi" [ref=e260] [cursor=pointer]:
+              - /url: /kebijakan-privasi
+          - listitem [ref=e261]:
+            - link "Syarat & Ketentuan" [ref=e262] [cursor=pointer]:
+              - /url: /syarat-ketentuan
+      - generic [ref=e263]:
+        - generic [ref=e264]: Pembayaran
+        - generic [ref=e265]:
+          - generic [ref=e266]: QRIS
+          - generic [ref=e267]: DANA
+          - generic [ref=e268]: OVO
+          - generic [ref=e269]: GoPay
+          - generic [ref=e270]: VA Bank
+    - generic [ref=e271]:
+      - generic [ref=e272]: © 2026 Ludovex Digital. All rights reserved.
+      - generic [ref=e273]: Dibuat untuk transaksi yang lebih mudah.
