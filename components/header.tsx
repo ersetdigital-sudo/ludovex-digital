@@ -14,7 +14,13 @@ const LINKS = [
   { href: "/tentang", label: "Tentang" },
 ];
 
-export function Header({ brandName = "PPOB" }: { brandName?: string }) {
+export function Header({
+  brandName = "PPOB",
+  logoUrl = null,
+}: {
+  brandName?: string;
+  logoUrl?: string | null;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -25,7 +31,7 @@ export function Header({ brandName = "PPOB" }: { brandName?: string }) {
     <header className="bg-white/85 backdrop-blur-md sticky top-0 z-30 border-b border-[#eceefa]">
       <nav className="max-w-6xl mx-auto px-5 h-[68px] flex items-center justify-between gap-4">
         <Link href="/" aria-label={brandName}>
-          <Logo name={brandName} />
+          <Logo name={brandName} logoUrl={logoUrl} />
         </Link>
 
         <div className="hidden md:flex gap-8 text-sm font-semibold text-[#6b7394]">

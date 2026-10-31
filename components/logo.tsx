@@ -1,10 +1,12 @@
-/** Logo web. Nama brand tetap dari database; bentuk logo adalah desain statis. */
+/** Logo web. Mark bisa diganti dari dashboard; ukuran tetap agar layout tidak bergeser. */
 export function Logo({
   dark = false,
   name = "PPOB",
+  logoUrl = null,
 }: {
   dark?: boolean;
   name?: string;
+  logoUrl?: string | null;
 }) {
   const grad = dark ? "logo-grad-dark" : "logo-grad-light";
   const words = name.trim().split(/\s+/).filter(Boolean);
@@ -13,24 +15,34 @@ export function Logo({
 
   return (
     <span className="inline-flex items-center gap-2.5">
-      <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true">
-        <defs>
-          <linearGradient id={grad} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#3b4fd8" />
-            <stop offset="1" stopColor="#8a6cf7" />
-          </linearGradient>
-        </defs>
-        <rect width="40" height="40" rx="12" fill={`url(#${grad})`} />
-        <path
-          d="M13 10v17h15"
-          fill="none"
-          stroke="#fff"
-          strokeWidth="4.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      {logoUrl ? (
+        <img
+          src={logoUrl}
+          alt=""
+          width={38}
+          height={38}
+          className="h-[38px] w-[38px] shrink-0 object-contain"
         />
-        <circle cx="27.5" cy="13.5" r="3.6" fill="#7ff0c6" />
-      </svg>
+      ) : (
+        <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true">
+          <defs>
+            <linearGradient id={grad} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#3b4fd8" />
+              <stop offset="1" stopColor="#8a6cf7" />
+            </linearGradient>
+          </defs>
+          <rect width="40" height="40" rx="12" fill={`url(#${grad})`} />
+          <path
+            d="M13 10v17h15"
+            fill="none"
+            stroke="#fff"
+            strokeWidth="4.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="27.5" cy="13.5" r="3.6" fill="#7ff0c6" />
+        </svg>
+      )}
       <span className="leading-none">
         <span
           className={`block font-extrabold text-[19px] tracking-tight ${

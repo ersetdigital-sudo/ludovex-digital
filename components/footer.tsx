@@ -5,9 +5,11 @@ import { Logo } from "./logo";
 
 export function Footer({
   brandName = "PPOB",
+  logoUrl = null,
   waCs = null,
 }: {
   brandName?: string;
+  logoUrl?: string | null;
   waCs?: string | null;
 }) {
   const waNumber = digits(waCs ?? "");
@@ -16,7 +18,7 @@ export function Footer({
     <footer className="bg-[#10173a] text-white/65 text-sm">
       <div className="max-w-6xl mx-auto px-5 pt-14 pb-8 grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <Logo dark name={brandName} />
+          <Logo dark name={brandName} logoUrl={logoUrl} />
           <p className="mt-4 max-w-xs">
             Platform pembayaran digital untuk pulsa, data, token listrik, dan tagihan
             bulanan. Cepat, aman, harga bersahabat.

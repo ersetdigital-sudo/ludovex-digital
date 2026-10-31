@@ -92,6 +92,7 @@ export async function saveSettingsAction(
     if (methodError) return { ok: false, message: dbError(methodError) };
   }
 
+  revalidatePath("/", "layout");
   revalidatePath("/admin", "layout");
   revalidatePath("/admin");
   revalidatePath("/admin/pengaturan");

@@ -297,6 +297,12 @@
   gap: 18px;
 }
 
+.admin-root .adm-logo-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .admin-root .adm-logo-row {
   display: flex;
   flex-wrap: wrap;

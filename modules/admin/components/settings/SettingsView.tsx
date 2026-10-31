@@ -242,21 +242,28 @@ Total: Rp101.500`}
 
           <div className="adm-card adm-brand-card">
             <h2>Identitas brand</h2>
-            <div className="adm-logo-row">
-              <BrandMark
-                name={nama || brand.nama}
-                logoUrl={logoUrl}
-                color={warna}
-                size="lg"
-              />
-              <ImageUpload
-                kind="logo"
-                label="Upload logo"
-                disabled={pending}
-                small
-                onUploaded={setLogoUrl}
-                onUploadingChange={setUploading}
-              />
+            <div className="adm-logo-block">
+              <div className="adm-logo-row">
+                <BrandMark
+                  name={nama || brand.nama}
+                  logoUrl={logoUrl}
+                  color={warna}
+                  size="lg"
+                />
+                <ImageUpload
+                  kind="logo"
+                  label="Upload logo"
+                  disabled={pending}
+                  small
+                  onUploaded={setLogoUrl}
+                  onUploadingChange={setUploading}
+                />
+              </div>
+              <p className="adm-hint">
+                Panduan logo: 512×512 px (rasio 1:1), minimal 128×128 px,
+                PNG transparan atau JPG, maks. 2 MB. Di header dan footer web
+                logo ditampilkan dalam kotak 38×38 px.
+              </p>
             </div>
             <div className="adm-brand-fields">
               <label className="adm-field">

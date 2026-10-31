@@ -72,6 +72,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const brandResult = await getPublicBrand();
   const brand = brandResult.data;
   const brandName = brand?.nama || FALLBACK_NAME;
+  const logoUrl = brand?.logo_url ?? null;
   const waCs = brand?.wa_cs ?? null;
   const waDigits = digits(waCs ?? "");
 
@@ -97,9 +98,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="id">
       <body className={`${jakarta.variable} antialiased`}>
-        <Header brandName={brandName} />
+        <Header brandName={brandName} logoUrl={logoUrl} />
         {children}
-        <Footer brandName={brandName} waCs={waCs} />
+        <Footer brandName={brandName} logoUrl={logoUrl} waCs={waCs} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
