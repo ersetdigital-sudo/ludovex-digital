@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ludovex Admin — Mockup Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{--ink:#0F172A;--ink2:#334155;--muted:#475569;--line:#E2E8F0;--soft:#F1F5F9;--bg:#EEF2F7;--green:#047857}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+.app{display:flex;min-height:100vh}
+/* sidebar */
+.side{width:256px;flex:none;background:#fff;border-right:1px solid var(--line);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none}
+.side::-webkit-scrollbar{display:none}
+.brand{display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px 18px 20px;border-bottom:1px solid var(--line)}
+.brand b{font-size:22px;font-weight:800;letter-spacing:.14em}
+.brand span{font-size:11px;font-weight:700;letter-spacing:.16em;color:#64748B}
+.nav{display:flex;flex-direction:column;gap:2px;padding:16px 14px}
+.grp{font-size:11px;font-weight:700;letter-spacing:.12em;color:#64748B;padding:12px 14px 6px}
+.grp:first-child{padding-top:0}
+.nl{display:flex;align-items:center;gap:12px;min-height:46px;padding:0 14px;border-radius:12px;font-size:15px;font-weight:600;color:var(--ink2);cursor:pointer;border:0;background:transparent;width:100%;text-align:left;white-space:nowrap}
+.nl svg.i{width:20px;height:20px}
+.nl:hover{background:var(--soft)}
+.nl.on{background:var(--ink);color:#fff}
+.nl .bd{margin-left:auto;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:#FEF3C7;color:#92400E}
+.nl.on .bd{background:#fff;color:var(--ink)}
+.side-foot{margin-top:auto;border-top:1px solid var(--line);padding:12px 14px}
+svg.i{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* main */
+main{flex:1;min-width:0;padding:clamp(20px,2.4vw,36px) clamp(16px,2.6vw,40px) 48px;display:flex;flex-direction:column;gap:20px}
+.page{display:none;flex-direction:column;gap:24px}
+.page.on{display:flex}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:clamp(18px,1.8vw,26px)}
+.hero{background:#fff;border:1px solid var(--line);border-radius:24px;padding:clamp(20px,2.2vw,32px);display:flex;flex-direction:column;gap:24px}
+.hrow{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px}
+.ht{display:flex;align-items:center;gap:18px}
+.tile{width:60px;height:60px;flex:none;border-radius:18px;background:var(--soft);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.tile svg.i{width:28px;height:28px}
+h1{margin:0;font-size:clamp(26px,2.4vw,34px);font-weight:800;letter-spacing:-.03em}
+.sub{margin:4px 0 0;font-size:clamp(14px,1.1vw,16px);color:var(--muted)}
+h2{margin:0;font-size:20px;font-weight:800}
+.btn{display:inline-flex;align-items:center;gap:10px;border:0;border-radius:14px;min-height:48px;padding:0 20px;font-size:15px;white-space:nowrap;font-weight:700;cursor:pointer;background:var(--ink);color:#fff}
+.btn.out{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.sm{min-height:46px;padding:0 16px;font-size:14px;border-radius:12px}
+.btn.red{background:#fff;color:#B91C1C;border:1px solid #FECACA}
+.btn svg.i{width:20px;height:20px}
+.lbl{font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+@media (max-width:1100px){.g2{grid-template-columns:1fr}}
+@media (max-width:1000px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.g4{grid-template-columns:1fr}}
+@media (max-width:640px){.g3{grid-template-columns:1fr}}
+.stat{border:1px solid var(--line);border-radius:20px;padding:clamp(18px,1.6vw,26px);display:flex;flex-direction:column;gap:10px;background:#fff;min-width:0;position:relative}
+.stat .lbl{display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.06em;white-space:nowrap;min-width:0}
+.stat .lbl svg.i{width:18px;height:18px}
+.stat .v{font-size:clamp(20px,1.9vw,28px);font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.stat .d{font-size:14px;color:var(--muted)}
+.tag-profit{position:absolute;top:12px;right:12px;font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--green);background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:3px 8px}
+.stat .d{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.period{display:flex;align-items:center;gap:4px;background:#F8FAFC;border:1px solid var(--line);border-radius:14px;padding:4px}
+.period span{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:700}
+.ib{width:40px;height:40px;border:0;background:transparent;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink2)}
+.ib svg.i{width:18px;height:18px}
+.alert-row{display:flex;align-items:center;gap:16px;cursor:pointer}
+.alert-ic{width:52px;height:52px;flex:none;border-radius:14px;background:#FFF7ED;color:#C2410C;display:flex;align-items:center;justify-content:center}
+.count{min-width:40px;height:40px;border-radius:999px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+.flex{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.f2{flex:2 1 520px;min-width:0}.f1{flex:1 1 320px;min-width:0}.f3{flex:3 1 560px;min-width:0}
+.scroll{overflow-x:auto}
+.trow{display:grid;grid-template-columns:minmax(130px,.9fr) minmax(0,1.4fr) auto;gap:14px;align-items:center;padding:14px 22px;border-bottom:1px solid #F1F5F9}
+.ts{display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right}
+.ts b{font-size:15px}
+.thead{font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--line)}
+.trow.click{cursor:pointer;background:#fff;width:100%;border-left:0;border-right:0;border-top:0;text-align:left;min-height:72px}
+.trow.click:hover,.trow.click.sel{background:#F8FAFC}
+.two{display:flex;flex-direction:column;gap:3px;min-width:0}
+.two b{font-size:15px;font-weight:600}.two small{font-size:13px;color:var(--muted)}
+.ref b{font-size:14px;font-weight:700}
+.pill{justify-self:start;font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;white-space:nowrap}
+.s-wait{background:#FEF3C7;color:#92400E}.s-paid{background:#DBEAFE;color:#1E40AF}.s-done{background:#DCFCE7;color:#166534}.s-cancel{background:var(--soft);color:var(--ink2)}
+.seg{display:flex;flex-wrap:wrap;gap:6px;background:#F8FAFC;border:1px solid var(--line);border-radius:16px;padding:6px}
+.seg button{min-height:40px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:0;background:transparent;color:var(--ink2)}
+.seg button.on{background:var(--ink);color:#fff}
+.seg button small{font-weight:600;color:#64748B;margin-left:4px}
+.seg button.on small{color:#CBD5E1}
+.search{flex:1 1 280px;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:0 14px;min-height:50px}
+.search input{flex:1;border:0;outline:none;font-size:16px;background:transparent;min-height:44px}
+.bar{height:8px;background:var(--soft);border-radius:999px}.bar i{display:block;height:8px;border-radius:999px;background:var(--ink)}
+dl.kv{margin:0;display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px 14px;font-size:15px}
+dl.kv dt{color:var(--muted)}dl.kv dd{margin:0;font-weight:600}
+.note{border-radius:14px;padding:14px 16px;font-size:14px;font-weight:600}
+.n-warn{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E}
+.n-ok{background:#F0FDF4;border:1px solid #BBF7D0;color:#14532D}
+.field{display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:700}
+.field input,.field select,select.in{font-size:15px;border:1px solid #CBD5E1;border-radius:12px;min-height:50px;padding:0 14px;background:#fff;font-weight:600;min-width:0}
+.hint{font-size:13px;font-weight:500;color:var(--muted)}
+.mono{font-family:ui-monospace,Menlo,monospace}
+.sw{width:50px;height:30px;border-radius:999px;border:0;padding:3px;cursor:pointer;display:flex;justify-content:flex-start;background:#CBD5E1;flex:none}
+.sw::after{content:"";width:24px;height:24px;border-radius:999px;background:#fff}
+.sw.on{justify-content:flex-end;background:var(--ink)}
+.svc{display:flex;align-items:center;gap:14px;min-height:64px;padding:8px 12px;border-radius:14px;cursor:pointer;border:1px solid transparent;background:#fff;width:100%;text-align:left}
+.svc:hover{background:#F8FAFC}
+.svc.on{border-color:var(--ink);background:#F8FAFC}
+.ini{width:42px;height:42px;flex:none;border-radius:12px;background:var(--soft);color:var(--ink2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.svc.on .ini{background:var(--ink);color:#fff}
+.mini{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px}
+.ptab{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(3,minmax(0,1fr)) 54px;gap:12px;align-items:center;padding:12px 20px;border-bottom:1px solid #F1F5F9;font-size:15px}
+.box{display:flex;align-items:center;border:1px solid #CBD5E1;border-radius:10px;padding:0 10px;min-height:42px;font-weight:700;font-size:14px;min-width:0;overflow:hidden;white-space:nowrap}
+.box.ro{border-color:var(--line);background:#F8FAFC;color:var(--ink2);font-weight:500}
+.vrow{display:flex;flex-wrap:wrap;align-items:center;gap:22px}
+.pm{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid #F1F5F9}
+.logo-pm{width:54px;height:38px;flex:none;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.swatch{width:46px;height:46px;border-radius:14px;cursor:pointer;border:3px solid #fff;box-shadow:0 0 0 1px var(--line)}
+.swatch.on{border-color:var(--ink)}
+.rule{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;padding-top:16px;border-top:1px solid #F1F5F9}
+.rule:first-of-type{border-top:0;padding-top:0}
+/* mobile */
+.topbar,.shade,#tabsel{display:none}
+@media (max-width:900px){
+  .app{flex-direction:column}
+  .topbar{display:flex;position:sticky;top:0;z-index:20;align-items:center;gap:8px;background:#fff;border-bottom:1px solid var(--line);padding:8px 12px}
+  .topbar b{font-size:16px;font-weight:700}
+  .side{position:fixed;left:0;top:0;bottom:0;height:auto;z-index:40;width:280px;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 20px 50px rgba(15,23,42,.18)}
+  body.menu .side{transform:none}
+  .shade{display:block;position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:30;opacity:0;pointer-events:none;transition:opacity .25s}
+  body.menu .shade{opacity:1;pointer-events:auto}
+  body.menu{overflow:hidden}
+  .g2{grid-template-columns:1fr}
+  .trow{grid-template-columns:minmax(0,1fr) auto;padding:14px 16px}
+  .trow.thead{display:none}
+  main{padding:14px 12px 32px;gap:14px}
+  .hero{padding:20px;border-radius:20px;gap:18px}
+  h1{font-size:24px}
+  .sub{font-size:13px}
+  .ht{gap:12px}
+  .stat{padding:18px;border-radius:16px;gap:6px}
+  .stat .lbl{font-size:11px}
+  .stat .v{font-size:20px}
+  .stat .d{font-size:12px}
+  .g4,.g3{gap:12px}
+  .ctrl{gap:10px}
+  .period span{padding:6px 10px;font-size:12px}
+  .ib{width:34px;height:34px}
+  .ctrl .btn,.hrow>.btn{min-height:40px;padding:0 14px;font-size:13px;border-radius:10px}
+  .tile{width:46px;height:46px;border-radius:14px}
+  .alert-row{gap:12px}
+  .alert-row .alert-ic{width:42px;height:42px}
+  .alert-row span[style*="font-size:18px"]{font-size:15px!important}
+  .alert-row .lbl{font-size:11px;letter-spacing:.04em}
+  .tile svg.i{width:22px;height:22px}
+  #tabs{display:none}
+  #tabsel{display:block;width:100%}
+  .trow>.ref{grid-column:1/-1}
+  .ptab{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 54px;padding:12px 14px}
+  .ptab>:nth-child(2),.ptab>:nth-child(4){display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar"><button class="ib" type="button" id="burger" aria-label="Buka menu" style="width:44px;height:44px"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><b>Ludovex Admin</b></header>
+  <div class="shade" id="shade"></div>
+  <aside class="side">
+    <div class="brand"><b>LUDOVEX</b><span>ADMIN</span></div>
+    <nav class="nav" id="nav" aria-label="Menu utama"></nav>
+    <div class="side-foot"><button class="nl" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Keluar</button></div>
+  </aside>
+
+  <main>
+    <!-- ================= DASHBOARD ================= -->
+    <section class="page" id="p-dashboard">
+      <div class="hero">
+        <div class="hrow">
+          <div class="ht"><div class="tile" data-ic="dashboard"></div><div><h1>Dashboard</h1><p class="sub">Ringkasan transaksi Ludovex Digital</p></div></div>
+          <div class="ctrl" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+            <div class="period"><button class="ib" aria-label="Bulan sebelumnya" data-ic="left"></button><span>Oktober</span><span>2026</span><button class="ib" aria-label="Bulan berikutnya" data-ic="right"></button></div>
+            <button class="btn" type="button"><span data-ic="refresh"></span>Muat ulang</button>
+            <button class="btn out" type="button" data-go="transaksi">Lihat transaksi →</button>
+          </div>
+        </div>
+        <div class="grid g4">
+          <div class="stat"><span class="lbl"><span data-ic="card"></span>Omzet lunas</span><span class="v">Rp48.620.500</span><span class="d">Dari transaksi sukses</span></div>
+          <div class="stat"><span class="lbl"><span data-ic="produk"></span>Total modal</span><span class="v">Rp45.910.000</span><span class="d">Modal produk terjual</span></div>
+          <div class="stat"><span class="lbl"><span data-ic="voucher"></span>Potongan voucher</span><span class="v">Rp312.000</span><span class="d">41 kali dipakai</span></div>
+          <div class="stat"><span class="tag-profit">PROFIT</span><span class="lbl"><span data-ic="trend"></span>Net profit</span><span class="v" style="color:var(--green)">Rp2.398.500</span><span class="d">Keuntungan bersih</span></div>
+        </div>
+      </div>
+      <div class="grid g3">
+        <div class="stat"><span class="lbl">Total transaksi</span><span class="v">1.284</span><span class="d">transaksi bulan ini</span></div>
+        <div class="stat"><span class="lbl">Rata-rata / transaksi</span><span class="v">Rp37.866</span><span class="d">nilai rata-rata</span></div>
+        <div class="stat"><span class="lbl">Tingkat batal</span><span class="v">6,2%</span><span class="d">lewat batas waktu bayar</span></div>
+      </div>
+      <button class="card alert-row" type="button" data-go="transaksi" style="width:100%;text-align:left;font:inherit">
+        <span class="alert-ic" data-ic="clock"></span>
+        <span style="flex:1;display:flex;flex-direction:column;gap:4px"><span style="font-size:18px;font-weight:800">Transaksi perlu diproses</span><span class="lbl">2 sudah bayar · 2 menunggu bayar</span></span>
+        <span class="count">2</span><span data-ic="right"></span>
+      </button>
+      <div class="flex">
+        <div class="card f2"><h2>Transaksi terbaru</h2><div style="margin-top:8px"><div id="recent"></div></div></div>
+        <div class="card f1" style="display:flex;flex-direction:column;gap:18px"><h2>Layanan terlaris</h2><div id="top" style="display:flex;flex-direction:column;gap:18px"></div></div>
+      </div>
+    </section>
+
+    <!-- ================= TRANSAKSI ================= -->
+    <section class="page" id="p-transaksi">
+      <div class="hero">
+        <div class="hrow">
+          <div class="ht"><div class="tile" data-ic="transaksi"></div><div><h1>Transaksi</h1><p class="sub">Bukti bayar dicek di WA, status diubah di sini</p></div></div>
+          <button class="btn out" type="button">Export Excel</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+          <div class="seg" id="tabs" role="tablist" aria-label="Filter status"></div>
+          <select id="tabsel" class="in" aria-label="Filter status"></select>
+          <label class="search"><span data-ic="search" style="color:var(--muted)"></span><input id="q" type="text" placeholder="Cari referensi atau nomor tujuan" aria-label="Cari transaksi"></label>
+        </div>
+      </div>
+      <div class="flex">
+        <div class="card f2" style="padding:0;overflow:hidden"><div>
+          <div class="trow thead"><span>Referensi</span><span>Produk &amp; tujuan</span><span style="text-align:right">Total &amp; status</span></div>
+          <div id="txlist"></div>
+        </div></div>
+        <aside class="card f1" id="detail" style="display:flex;flex-direction:column;gap:20px" aria-label="Detail transaksi"></aside>
+      </div>
+    </section>
+
+    <!-- ================= PRODUK ================= -->
+    <section class="page" id="p-produk">
+      <div class="hero"><div class="hrow">
+        <div class="ht"><div class="tile" data-ic="produk"></div><div><h1>Produk &amp; Harga</h1><p class="sub">Atur layanan, nominal, modal dan harga jual</p></div></div>
+        <button class="btn" type="button">+ Tambah layanan</button>
+      </div></div>
+      <div class="flex">
+        <div class="card f1" style="padding:22px;display:flex;flex-direction:column;gap:6px;flex:1 1 300px"><span class="lbl" style="padding:6px 10px 10px">Layanan</span><div id="svcs" style="display:flex;flex-direction:column;gap:6px"></div></div>
+        <div class="card f3" id="svcDetail" style="display:flex;flex-direction:column;gap:22px"></div>
+      </div>
+    </section>
+
+    <!-- ================= VOUCHER ================= -->
+    <section class="page" id="p-voucher">
+      <div class="hero"><div class="hrow">
+        <div class="ht"><div class="tile" data-ic="voucher"></div><div><h1>Voucher</h1><p class="sub">Kode potongan yang dipakai pembeli waktu checkout</p></div></div>
+      </div></div>
+      <div class="flex">
+        <div class="f3" id="vlist" style="display:flex;flex-direction:column;gap:16px"></div>
+        <div class="card" style="flex:2 1 360px;min-width:0;display:flex;flex-direction:column;gap:18px">
+          <h2>Buat voucher</h2>
+          <label class="field">Kode<input type="text" placeholder="Contoh: HEMAT10" style="text-transform:uppercase"></label>
+          <div class="field"><span>Jenis potongan</span><div class="seg" id="vtype"><button type="button" class="on" data-t="pct" style="flex:1">Persen</button><button type="button" data-t="flat" style="flex:1">Potongan tetap</button></div></div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <label class="field"><span id="f1">Persen</span><input id="i1" type="text" placeholder="20"></label>
+            <label class="field"><span id="f2">Maks. potongan</span><input id="i2" type="text" placeholder="Rp20.000"></label>
+          </div>
+          <label class="field">Berlaku untuk<select><option>Semua layanan</option><option>Pilih layanan tertentu</option></select></label>
+          <label class="field">Masa berlaku<input type="text" placeholder="Opsional, contoh: s/d 30 Nov 2026"></label>
+          <button class="btn" type="button" style="justify-content:center">Simpan voucher</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PEMBAYARAN & BRAND ================= -->
+    <section class="page" id="p-pembayaran">
+      <div class="hero"><div class="hrow">
+        <div class="ht"><div class="tile" data-ic="pembayaran"></div><div><h1>Pembayaran &amp; Brand</h1><p class="sub">Perubahan di sini langsung tampil di web Ludovex Digital</p></div></div>
+        <button class="btn" type="button">Simpan perubahan</button>
+      </div></div>
+      <div class="grid g2">
+        <div class="card" style="display:flex;flex-direction:column">
+          <h2>Metode bayar</h2><p class="hint" style="margin:6px 0 12px;font-size:14px">Yang dimatikan gak muncul di form checkout</p>
+          <div id="pms"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div class="card" style="display:flex;flex-direction:column;gap:16px">
+            <h2>Gambar QRIS</h2>
+            <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center">
+              <div style="width:150px;height:150px;flex:none;border-radius:16px;border:1px dashed #CBD5E1;background:#F8FAFC;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;color:var(--muted);padding:12px">[gambar QRIS Ludovex]</div>
+              <div style="flex:1 1 180px;display:flex;flex-direction:column;gap:10px"><b>qris-ludovex.jpg</b><span class="hint">PNG atau JPG, maks 2 MB</span><button class="btn sm" type="button" style="align-self:start">Ganti gambar</button></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column;gap:16px">
+            <h2>WhatsApp CS</h2>
+            <label class="field">Nomor penerima bukti bayar<input type="tel" value="0857-1117-2317"></label>
+            <div class="note n-ok" style="font-weight:500;line-height:1.6;white-space:pre-line">Halo CS Ludovex Digital, saya ingin konfirmasi pembayaran:
+Kode referensi: REF-LDX31081204
+Produk: Token PLN 100.000
+Total: Rp101.500</div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;gap:18px">
+          <h2>Identitas brand</h2>
+          <div style="display:flex;align-items:center;gap:16px"><div id="logo" style="width:64px;height:64px;border-radius:18px;background:#3B4FD8;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:26px">L</div><button class="btn out sm" type="button">Upload logo</button></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+            <label class="field">Nama brand<input type="text" value="Ludovex Digital"></label>
+            <label class="field">Tagline<input type="text" value="Semua pembayaran digital, satu tempat"></label>
+          </div>
+          <div class="field"><span>Warna utama</span><div id="swatches" style="display:flex;flex-wrap:wrap;gap:10px"></div></div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;gap:16px">
+          <h2>Aturan transaksi</h2>
+          <div class="rule"><span class="two"><b style="font-weight:700">Batas waktu bayar</b><small>Lewat dari ini transaksi batal otomatis</small></span><select class="in"><option>15 menit</option><option>30 menit</option><option>1 jam</option><option>2 jam</option></select></div>
+          <div class="rule"><span class="two"><b style="font-weight:700">Batas transaksi belum bayar</b><small>Per nomor tujuan, biar gak dispam</small></span><select class="in"><option>3 transaksi</option><option>5 transaksi</option></select></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ---------- ikon ---------- */
+const IC = {
+  dashboard:'M4 4h6v6H4zM14 4h6v6h-6zM14 14h6v6h-6zM4 14h6v6H4z',
+  transaksi:'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zM14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8M10 9H8',
+  produk:'M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73zM12 22V12M3.3 7 12 12l8.7-5M7.5 4.27l9 5.15',
+  voucher:'M2 9a3 3 0 1 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 1 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2zM9 9h.01M15 9l-6 6M15 15h.01',
+  pembayaran:'M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM2 10h20M6 15h4',
+  card:'M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM2 10h20',
+  trend:'M22 7l-8.5 8.5-5-5L2 17M16 7h6v6',
+  refresh:'M21 12a9 9 0 0 1-15.5 6.3L3 16M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M3 21v-5h5',
+  left:'M15 18l-6-6 6-6', right:'M9 18l6-6-6-6',
+  clock:'M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z',
+  search:'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-3.5-3.5'
+};
+const svg = k => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="${IC[k]}"/></svg>`;
+document.querySelectorAll('[data-ic]').forEach(el => el.innerHTML = svg(el.dataset.ic));
+const rp = n => 'Rp' + Math.round(n).toLocaleString('id-ID');
+const $ = id => document.getElementById(id);
+
+/* ---------- navigasi ---------- */
+const MENU = [
+  ['UTAMA', [['dashboard','Dashboard']]],
+  ['PENJUALAN', [['transaksi','Transaksi','2'],['produk','Produk & Harga'],['voucher','Voucher']]],
+  ['PENGATURAN', [['pembayaran','Pembayaran & Brand']]]
+];
+let page = location.hash.slice(1) || 'dashboard';
+function renderNav(){
+  $('nav').innerHTML = MENU.map(([g, items]) => `<div class="grp">${g}</div>` + items.map(([id,label,bd]) =>
+    `<button type="button" class="nl ${id===page?'on':''}" data-go="${id}">${svg(id)}<span>${label}</span>${bd?`<span class="bd">${bd}</span>`:''}</button>`).join('')).join('');
+}
+function go(p){
+  page = p; location.hash = p;
+  document.querySelectorAll('.page').forEach(s => s.classList.toggle('on', s.id === 'p-' + p));
+  renderNav(); window.scrollTo(0,0); document.body.classList.remove('menu');
+}
+$('burger').addEventListener('click', () => document.body.classList.add('menu'));
+$('shade').addEventListener('click', () => document.body.classList.remove('menu'));
+document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+
+/* ---------- data transaksi ---------- */
+const ST = {
+  wait:['Menunggu bayar','s-wait','Tandai sudah bayar'],
+  paid:['Sudah bayar','s-paid','Simpan SN & tandai sukses'],
+  done:['Sukses','s-done','Kirim ulang SN ke pembeli'],
+  cancel:['Dibatalkan','s-cancel','Buka lagi transaksi']
+};
+const TX = [
+  ['REF-LDX31081204','08.12','Token PLN','Token PLN 100.000','5213 0098 771','Rp101.500','paid','-',''],
+  ['REF-LDX31080933','08.09','Pulsa','Pulsa Telkomsel 50.000','0812-xxxx-4471','Rp50.500','paid','LUDOBARU',''],
+  ['REF-LDX31080310','08.03','Paket Data','25 GB / 30 hari','0857-xxxx-1120','Rp95.000','done','-','4120 9981 2230 7714'],
+  ['REF-LDX31075802','07.58','E-Wallet','Top up DANA 100.000','0896-xxxx-3301','Rp101.000','wait','-',''],
+  ['REF-LDX31075117','07.51','Pulsa','Pulsa XL 25.000','0818-xxxx-9032','Rp26.000','wait','-',''],
+  ['REF-LDX31074409','07.44','Token PLN','Token PLN 50.000','1420 4471 302','Rp51.500','done','HEMAT5','0921 4472 1180 5530 2219'],
+  ['REF-LDX31070021','07.00','Pulsa','Pulsa Indosat 10.000','0857-xxxx-6612','Rp11.500','cancel','-','']
+].map(r => ({ref:r[0],time:r[1],svc:r[2],prod:r[3],no:r[4],total:r[5],st:r[6],voucher:r[7],sn:r[8]}));
+const pill = st => `<span class="pill ${ST[st][1]}">${ST[st][0]}</span>`;
+
+$('recent').innerHTML = TX.slice(0,6).map(t => `<div class="trow" style="padding:14px 0;border-top:1px solid #F1F5F9;border-bottom:0">
+  <span class="two ref"><b>${t.ref}</b><small>${t.time}</small></span>
+  <span class="two"><b>${t.prod}</b><small>${t.no}</small></span>
+  <span class="ts"><b>${t.total}</b>${pill(t.st)}</span></div>`).join('');
+$('top').innerHTML = [['Pulsa',512,100],['Token PLN',338,66],['Paket Data',241,47],['E-Wallet',163,32],['Tagihan',30,6]].map(([n,c,p]) =>
+  `<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between;font-size:15px"><b style="font-weight:600">${n}</b><span style="color:var(--muted)">${c} trx</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`).join('');
+
+let tab = 'all', sel = TX[0].ref, q = '';
+function renderTx(){
+  const defs = [['all','Semua'],['wait','Menunggu bayar'],['paid','Sudah bayar'],['done','Sukses'],['cancel','Dibatalkan']];
+  $('tabs').innerHTML = defs.map(([k,l]) => `<button type="button" role="tab" class="${tab===k?'on':''}" data-tab="${k}">${l}<small>${k==='all'?TX.length:TX.filter(t=>t.st===k).length}</small></button>`).join('');
+  $('tabsel').innerHTML = defs.map(([k,l]) => `<option value="${k}" ${tab===k?'selected':''}>${l} (${k==='all'?TX.length:TX.filter(t=>t.st===k).length})</option>`).join('');
+  const list = TX.filter(t => (tab==='all'||t.st===tab) && (!q || (t.ref+t.no).toLowerCase().includes(q)));
+  $('txlist').innerHTML = list.length ? list.map(t => `<button type="button" class="trow click ${t.ref===sel?'sel':''}" data-sel="${t.ref}">
+    <span class="two ref"><b>${t.ref}</b><small>${t.time}</small></span>
+    <span class="two"><b>${t.prod}</b><small>${t.no}</small></span>
+    <span class="ts"><b>${t.total}</b>${pill(t.st)}</span></button>`).join('')
+    : `<p style="margin:0;padding:48px 26px;text-align:center;color:var(--muted)">Belum ada transaksi di status ini.</p>`;
+  const s = TX.find(t => t.ref === sel) || TX[0];
+  const log = {
+    wait:[[s.time,'Transaksi dibuat']],
+    paid:[[s.time,'Transaksi dibuat'],['08.15','Ditandai sudah bayar oleh Andri']],
+    done:[[s.time,'Transaksi dibuat'],['08.06','Ditandai sudah bayar'],['08.09','Sukses, SN dikirim']],
+    cancel:[[s.time,'Transaksi dibuat'],['07.15','Batal otomatis, lewat batas bayar']]
+  }[s.st];
+  $('detail').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div style="display:flex;flex-direction:column;gap:6px"><span class="lbl">Detail transaksi</span><b style="font-size:20px;font-weight:800">${s.ref}</b></div>${pill(s.st)}</div>
+    ${s.st==='wait'?'<div class="note n-warn">Sisa waktu bayar 08:42. Lewat dari itu batal otomatis.</div>':''}
+    <dl class="kv"><dt>Layanan</dt><dd>${s.svc}</dd><dt>Produk</dt><dd>${s.prod}</dd><dt>Nomor tujuan</dt><dd>${s.no}</dd><dt>Metode</dt><dd>QRIS</dd><dt>Voucher</dt><dd>${s.voucher}</dd><dt>Total</dt><dd style="font-weight:800;font-size:18px">${s.total}</dd></dl>
+    ${s.st==='paid'?'<label class="field">SN / Token<input type="text" placeholder="Isi SN atau token PLN dari supplier"><span class="hint">Tampil di halaman Cek Transaksi pembeli</span></label>':''}
+    ${s.st==='done'?`<div class="note n-ok" style="display:flex;flex-direction:column;gap:4px"><span class="lbl" style="color:#166534">SN / Token</span><span class="mono" style="font-size:16px">${s.sn}</span></div>`:''}
+    <div style="border-top:1px solid #F1F5F9;padding-top:18px;display:flex;flex-direction:column;gap:10px"><span class="lbl">Riwayat</span>${log.map(([t,x]) => `<div style="display:flex;gap:12px;font-size:14px"><span style="color:var(--muted);width:46px">${t}</span><span>${x}</span></div>`).join('')}</div>
+    <div style="display:flex;flex-direction:column;gap:10px"><button class="btn" type="button" style="justify-content:center">${ST[s.st][2]}</button>
+    <div style="display:flex;gap:10px"><button class="btn out sm" type="button" style="flex:1;justify-content:center">Chat pembeli</button><button class="btn red sm" type="button" style="flex:1;justify-content:center">Batalkan</button></div></div>`;
+}
+$('tabsel').addEventListener('change', e => { tab = e.target.value; renderTx(); });
+$('tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b){ tab = b.dataset.tab; renderTx(); }});
+$('txlist').addEventListener('click', e => { const b = e.target.closest('[data-sel]'); if (b){ sel = b.dataset.sel; renderTx(); }});
+$('q').addEventListener('input', e => { q = e.target.value.toLowerCase().replace(/\s/g,''); renderTx(); });
+
+/* ---------- produk ---------- */
+const SVC = [
+  {id:'pulsa',name:'Pulsa',field:'Nomor HP',items:[['Pulsa 10.000',10850,11500],['Pulsa 25.000',25200,26000],['Pulsa 50.000',49600,50500],['Pulsa 100.000',98100,99000]]},
+  {id:'data',name:'Paket Data',field:'Nomor HP',items:[['5 GB / 30 hari',32500,35000],['12 GB / 30 hari',56800,60000],['25 GB / 30 hari',91000,95000],['Unlimited Harian',115000,120000]]},
+  {id:'pln',name:'Token PLN',field:'ID Pelanggan / No. Meter',items:[['Token 20.000',20300,21500],['Token 50.000',50300,51500],['Token 100.000',100300,101500],['Token 200.000',200300,201500]]},
+  {id:'wallet',name:'E-Wallet',field:'Nomor HP terdaftar',items:[['Top up 50.000',50200,51000],['Top up 100.000',100200,101000],['Top up 200.000',200200,201000],['Top up 500.000',500200,501000]]},
+  {id:'pdam',name:'PDAM',field:'Nomor Pelanggan',bill:true},
+  {id:'bpjs',name:'BPJS',field:'Nomor VA Keluarga',bill:true},
+  {id:'inet',name:'Internet & TV',field:'ID Pelanggan',bill:true},
+  {id:'fin',name:'Multifinance',field:'Nomor Kontrak',bill:true}
+];
+let svc = 'pulsa'; const off = {};
+const ini = n => n.split(/[\s&-]+/).filter(Boolean).map(w => w[0]).join('').slice(0,2).toUpperCase();
+function renderSvc(){
+  $('svcs').innerHTML = SVC.map(s => `<button type="button" class="svc ${s.id===svc?'on':''}" data-svc="${s.id}"><span class="ini">${ini(s.name)}</span>
+    <span class="two" style="flex:1"><b style="font-weight:700">${s.name}</b><small>${s.bill?'Tagihan':s.items.length+' nominal'}</small></span>
+    <span class="mini" style="background:${s.bill?'#FEF3C7':'#ECFDF5'};color:${s.bill?'#92400E':'#047857'}">${s.bill?'Cek dulu':'Aktif'}</span></button>`).join('');
+  const c = SVC.find(s => s.id === svc);
+  $('svcDetail').innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:14px">
+      <div><h2 style="font-size:26px">${c.name}</h2><p class="hint" style="margin:6px 0 0;font-size:15px">Input pembeli: ${c.field}</p></div>
+      <div style="display:flex;gap:10px"><button class="btn out sm" type="button">Edit layanan</button>${c.bill?'':'<button class="btn sm" type="button">+ Nominal</button>'}</div>
+    </div>
+    ${c.bill ? `<div class="note n-warn" style="font-size:15px">Layanan tagihan: nominal belum bisa dicek otomatis. Alurnya nunggu keputusan (sembunyikan, cek manual, atau API provider).</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px"><label class="field">Biaya admin ke pembeli<input type="text" value="Rp2.500"></label><label class="field">Biaya dari supplier<input type="text" value="Rp1.500"></label></div>`
+    : `<div style="border:1px solid var(--line);border-radius:18px;overflow:hidden"><div>
+      <div class="ptab thead" style="padding:16px 20px"><span>Nominal</span><span>Modal</span><span>Harga jual</span><span>Untung</span><span>Aktif</span></div>
+      ${c.items.map(([n,cost,price]) => { const k = c.id+n; return `<div class="ptab"><b style="font-weight:600">${n}</b><span class="box ro">${rp(cost)}</span><span class="box">${rp(price)}</span><b style="color:var(--green)">${rp(price-cost)}</b><button type="button" class="sw ${off[k]?'':'on'}" data-tog="${k}" aria-label="Aktifkan ${n}" aria-pressed="${!off[k]}"></button></div>`; }).join('')}
+    </div></div>`}
+    <p class="hint" style="margin:0;font-size:14px">Produk yang dimatikan langsung hilang dari web, data transaksi lamanya tetap aman.</p>`;
+}
+$('svcs').addEventListener('click', e => { const b = e.target.closest('[data-svc]'); if (b){ svc = b.dataset.svc; renderSvc(); }});
+$('svcDetail').addEventListener('click', e => { const b = e.target.closest('[data-tog]'); if (b){ off[b.dataset.tog] = !off[b.dataset.tog]; renderSvc(); }});
+
+/* ---------- voucher ---------- */
+const VC = [
+  {code:'LUDOBARU',label:'Cashback 20% (maks. Rp20.000)',rule:'Khusus Pulsa, Paket Data, Token PLN',used:28,disc:'Rp246.000',on:true},
+  {code:'HEMAT5',label:'Potongan Rp5.000',rule:'Minimal transaksi Rp50.000 · semua layanan',used:13,disc:'Rp65.000',on:true},
+  {code:'LAMA10',label:'Potongan 10% (maks. Rp10.000)',rule:'Semua layanan',used:102,disc:'Rp418.500',on:false}
+];
+function renderV(){
+  $('vlist').innerHTML = VC.map((v,i) => `<div class="card vrow">
+    <div style="flex:1 1 260px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span class="mono" style="font-size:22px;font-weight:800;letter-spacing:.04em">${v.code}</span><span class="mini" style="background:${v.on?'#ECFDF5':'#F1F5F9'};color:${v.on?'#047857':'#334155'}">${v.on?'Aktif':'Nonaktif'}</span></div>
+      <b style="font-size:16px;font-weight:600">${v.label}</b><span class="hint" style="font-size:14px">${v.rule}</span></div>
+    <div style="display:flex;gap:28px"><div class="two"><span class="lbl" style="font-size:12px">Dipakai</span><b style="font-size:20px;font-weight:800">${v.used}</b></div><div class="two"><span class="lbl" style="font-size:12px">Total potongan</span><b style="font-size:20px;font-weight:800">${v.disc}</b></div></div>
+    <div style="display:flex;align-items:center;gap:12px"><button class="btn out sm" type="button">Edit</button><button type="button" class="sw ${v.on?'on':''}" data-v="${i}" aria-label="Aktifkan ${v.code}" aria-pressed="${v.on}"></button></div>
+  </div>`).join('');
+}
+$('vlist').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b){ VC[b.dataset.v].on = !VC[b.dataset.v].on; renderV(); }});
+$('vtype').addEventListener('click', e => {
+  const b = e.target.closest('[data-t]'); if (!b) return;
+  $('vtype').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  const pct = b.dataset.t === 'pct';
+  $('f1').textContent = pct ? 'Persen' : 'Potongan'; $('i1').placeholder = pct ? '20' : 'Rp5.000';
+  $('f2').textContent = pct ? 'Maks. potongan' : 'Min. transaksi'; $('i2').placeholder = pct ? 'Rp20.000' : 'Rp50.000';
+});
+
+/* ---------- pembayaran ---------- */
+const PM = [['QRIS','QRIS','Gratis',true],['DANA','DANA','Rp1.000',false],['OVO','OVO','Rp1.000',false],['GoPay','GOPAY','Rp1.000',false],['ShopeePay','SPAY','Rp1.000',false],['Virtual Account','VA','Rp2.500',false]];
+function renderPm(){
+  $('pms').innerHTML = PM.map((m,i) => `<div class="pm"><span class="logo-pm">${m[1]}</span><span class="two" style="flex:1"><b style="font-weight:700">${m[0]}</b><small>Biaya admin ${m[2]}</small></span><button type="button" class="sw ${m[3]?'on':''}" data-pm="${i}" aria-label="Aktifkan ${m[0]}" aria-pressed="${m[3]}"></button></div>`).join('');
+}
+$('pms').addEventListener('click', e => { const b = e.target.closest('[data-pm]'); if (b){ PM[b.dataset.pm][3] = !PM[b.dataset.pm][3]; renderPm(); }});
+const COLORS = ['#3B4FD8','#6D28D9','#DC2626','#EA580C','#0F766E','#0F172A']; let color = COLORS[0];
+function renderSw(){
+  $('swatches').innerHTML = COLORS.map(c => `<button type="button" class="swatch ${c===color?'on':''}" style="background:${c}" data-c="${c}" aria-label="Pilih warna ${c}"></button>`).join('');
+  $('logo').style.background = color;
+}
+$('swatches').addEventListener('click', e => { const b = e.target.closest('[data-c]'); if (b){ color = b.dataset.c; renderSw(); }});
+
+renderTx(); renderSvc(); renderV(); renderPm(); renderSw(); go(page);
+</script>
+</body>
+</html>
