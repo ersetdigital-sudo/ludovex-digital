@@ -8,6 +8,7 @@ import { formatRupiah, toNumber } from "../../lib/format";
 import { onlyDigits } from "../../lib/utils";
 import type { ProductRow, ServiceRow } from "../../types";
 import { Modal } from "../ui/Modal";
+import { RupiahInput } from "../ui/RupiahInput";
 import { useToast } from "../providers/ToastProvider";
 
 export function ProductModal({
@@ -116,10 +117,9 @@ export function ProductModal({
             <span>Harga modal</span>
             <span className="adm-input-group">
               <span>Rp</span>
-              <input
-                inputMode="numeric"
+              <RupiahInput
                 value={modal}
-                onChange={(event) => setModal(onlyDigits(event.target.value))}
+                onValueChange={setModal}
                 placeholder="0"
               />
             </span>
@@ -128,10 +128,9 @@ export function ProductModal({
             <span>Harga jual</span>
             <span className="adm-input-group">
               <span>Rp</span>
-              <input
-                inputMode="numeric"
+              <RupiahInput
                 value={jual}
-                onChange={(event) => setJual(onlyDigits(event.target.value))}
+                onValueChange={setJual}
                 placeholder="0"
               />
             </span>

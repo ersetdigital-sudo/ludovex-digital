@@ -12,6 +12,7 @@ import type {
   VoucherRow,
   VoucherType,
 } from "../../types";
+import { RupiahInput } from "../ui/RupiahInput";
 import { useToast } from "../providers/ToastProvider";
 
 export function VoucherForm({
@@ -173,11 +174,10 @@ export function VoucherForm({
           ) : (
             <span className="adm-input-group">
               <span>Rp</span>
-              <input
-                inputMode="numeric"
+              <RupiahInput
                 value={nilai}
-                onChange={(event) => setNilai(onlyDigits(event.target.value))}
-                placeholder="5000"
+                onValueChange={setNilai}
+                placeholder="5.000"
               />
             </span>
           )}
@@ -188,11 +188,10 @@ export function VoucherForm({
             <span>Maks. potongan</span>
             <span className="adm-input-group">
               <span>Rp</span>
-              <input
-                inputMode="numeric"
+              <RupiahInput
                 value={maks}
-                onChange={(event) => setMaks(onlyDigits(event.target.value))}
-                placeholder="20000"
+                onValueChange={setMaks}
+                placeholder="20.000"
               />
             </span>
             <span className="adm-hint">Kosongkan untuk tanpa batas.</span>
@@ -202,11 +201,10 @@ export function VoucherForm({
             <span>Min. transaksi</span>
             <span className="adm-input-group">
               <span>Rp</span>
-              <input
-                inputMode="numeric"
+              <RupiahInput
                 value={min}
-                onChange={(event) => setMin(onlyDigits(event.target.value))}
-                placeholder="50000"
+                onValueChange={setMin}
+                placeholder="50.000"
               />
             </span>
           </label>

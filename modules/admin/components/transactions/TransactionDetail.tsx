@@ -42,6 +42,7 @@ import type {
   VoucherRow,
 } from "../../types";
 import { Modal } from "../ui/Modal";
+import { RupiahInput } from "../ui/RupiahInput";
 import { StatusPill } from "../ui/StatusPill";
 import { useToast } from "../providers/ToastProvider";
 import { Countdown } from "./Countdown";
@@ -273,13 +274,10 @@ export function TransactionDetail({
               <span>Nominal tagihan</span>
               <span className="adm-input-group">
                 <span>Rp</span>
-                <input
-                  inputMode="numeric"
+                <RupiahInput
                   value={nominal}
-                  onChange={(event) =>
-                    setNominal(onlyDigits(event.target.value))
-                  }
-                  placeholder="150000"
+                  onValueChange={setNominal}
+                  placeholder="150.000"
                   aria-label="Nominal tagihan"
                 />
               </span>
@@ -288,10 +286,9 @@ export function TransactionDetail({
               <span>Denda</span>
               <span className="adm-input-group">
                 <span>Rp</span>
-                <input
-                  inputMode="numeric"
+                <RupiahInput
                   value={denda}
-                  onChange={(event) => setDenda(onlyDigits(event.target.value))}
+                  onValueChange={setDenda}
                   placeholder="0"
                   aria-label="Denda tagihan"
                 />

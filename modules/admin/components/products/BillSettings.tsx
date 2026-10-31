@@ -8,6 +8,7 @@ import { toNumber } from "../../lib/format";
 import { onlyDigits } from "../../lib/utils";
 import type { AdminBrand, ServiceRow } from "../../types";
 import { useToast } from "../providers/ToastProvider";
+import { RupiahInput } from "../ui/RupiahInput";
 
 export function BillSettings({
   brand,
@@ -57,10 +58,9 @@ export function BillSettings({
           <span>Biaya admin ke pembeli</span>
           <span className="adm-input-group">
             <span>Rp</span>
-            <input
-              inputMode="numeric"
+            <RupiahInput
               value={adminFee}
-              onChange={(event) => setAdminFee(onlyDigits(event.target.value))}
+              onValueChange={setAdminFee}
               placeholder="0"
             />
           </span>
@@ -69,12 +69,9 @@ export function BillSettings({
           <span>Biaya dari supplier</span>
           <span className="adm-input-group">
             <span>Rp</span>
-            <input
-              inputMode="numeric"
+            <RupiahInput
               value={supplierFee}
-              onChange={(event) =>
-                setSupplierFee(onlyDigits(event.target.value))
-              }
+              onValueChange={setSupplierFee}
               placeholder="0"
             />
           </span>

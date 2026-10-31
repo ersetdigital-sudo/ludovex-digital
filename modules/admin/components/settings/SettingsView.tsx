@@ -6,6 +6,7 @@ import { CreditCard, Loader2, QrCode, Save } from "../../icons";
 import { PageHero } from "../ui/PageHero";
 import { Toggle } from "../ui/Toggle";
 import { BrandMark } from "../ui/BrandMark";
+import { RupiahInput } from "../ui/RupiahInput";
 import { ImageUpload } from "./ImageUpload";
 import { useToast } from "../providers/ToastProvider";
 import { saveSettingsAction } from "../../data/actions/settings";
@@ -164,13 +165,10 @@ export function SettingsView({
                         <span>Biaya admin</span>
                         <span className="adm-input-group adm-input-group-sm">
                           <span>Rp</span>
-                          <input
-                            inputMode="numeric"
+                          <RupiahInput
                             value={method.fee}
-                            onChange={(event) =>
-                              updateMethod(method.id, {
-                                fee: onlyDigits(event.target.value),
-                              })
+                            onValueChange={(fee) =>
+                              updateMethod(method.id, { fee })
                             }
                             aria-label={`Biaya admin ${method.nama}`}
                           />
