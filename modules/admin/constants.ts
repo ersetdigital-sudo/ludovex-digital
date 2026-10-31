@@ -14,14 +14,6 @@ export const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg"];
 
 export const REMEMBER_COOKIE = "admin_remember";
 
-export const BRAND_COLORS = [
-  "#3B4FD8",
-  "#6D28D9",
-  "#DC2626",
-  "#EA580C",
-  "#0F766E",
-  "#0F172A",
-];
 
 export const DEADLINE_OPTIONS = [
   { value: 15, label: "15 menit" },

@@ -11,7 +11,6 @@ import { ImageUpload } from "./ImageUpload";
 import { useToast } from "../providers/ToastProvider";
 import { saveSettingsAction } from "../../data/actions/settings";
 import {
-  BRAND_COLORS,
   DEADLINE_OPTIONS,
   MAX_PENDING_OPTIONS,
   paymentLogoLabel,
@@ -42,7 +41,6 @@ export function SettingsView({
   const toast = useToast();
   const [nama, setNama] = useState(brand.nama);
   const [tagline, setTagline] = useState(brand.tagline ?? "");
-  const [warna, setWarna] = useState(brand.warna_utama ?? "#3B4FD8");
   const [wa, setWa] = useState(brand.wa_cs ?? "");
   const [logoUrl, setLogoUrl] = useState<string | null>(brand.logo_url);
   const [qrisUrl, setQrisUrl] = useState<string | null>(brand.qris_image_url);
@@ -58,10 +56,6 @@ export function SettingsView({
   );
   const [pending, setPending] = useState(false);
   const [uploading, setUploading] = useState(false);
-
-  const colors = BRAND_COLORS.includes(warna)
-    ? BRAND_COLORS
-    : [warna, ...BRAND_COLORS];
 
   const deadlineOptions = DEADLINE_OPTIONS.some(
     (option) => option.value === batas,
@@ -96,7 +90,7 @@ export function SettingsView({
     const draft: SettingsDraft = {
       nama: nama.trim(),
       tagline: tagline.trim(),
-      warna_utama: warna,
+      warna_utama: brand.warna_utama ?? "#3B4FD8",
       wa_cs: wa,
       batas_bayar_menit: batas,
       maks_order_pending: maks,
@@ -247,7 +241,7 @@ Total: Rp101.500`}
                 <BrandMark
                   name={nama || brand.nama}
                   logoUrl={logoUrl}
-                  color={warna}
+                  color={brand.warna_utama}
                   size="lg"
                 />
                 <ImageUpload
@@ -282,22 +276,6 @@ Total: Rp101.500`}
                   placeholder="Semua pembayaran digital, satu tempat"
                 />
               </label>
-            </div>
-            <div className="adm-field">
-              <span>Warna utama</span>
-              <div className="adm-swatches">
-                {colors.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    className={`adm-swatch ${color === warna ? "is-active" : ""}`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setWarna(color)}
-                    aria-label={`Pilih warna ${color}`}
-                    aria-pressed={color === warna}
-                  />
-                ))}
-              </div>
             </div>
           </div>
 
