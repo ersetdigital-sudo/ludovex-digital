@@ -1641,3 +1641,9 @@ body:has(.adm-login-screen) {
     width: 100%;
   }
 }
+
+/* Jangan buat scroll container di html/body: sticky sidebar butuh viewport. */
+html:has(.admin-root),
+body:has(.admin-root) {
+  overflow-x: clip;
+}
