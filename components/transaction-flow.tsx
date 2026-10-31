@@ -3,209 +3,374 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Icon, type IconName } from "./icon";
-import { QrisBox } from "./qris-box";
-import { ACTIVE_PAY_METHODS, OPERATORS, VOUCHERS } from "@/data/payments";
-import { SERVICES, type ProductItem, type Service, serviceById } from "@/data/services";
-import { fmtCountdown, fmtDate, rp, waConfirmLink } from "@/lib/format";
-import { getStored, removeStored, saveTx, setStored, type Tx } from "@/lib/tx";
+import { PaymentDetail } from "./payment-detail";
+import { DataUnavailable } from "./data-unavailable";
+import { OPERATORS, type PayMethod } from "@/data/payments";
+import type {
+  ProductItem,
+  Service,
+  ServiceInputField,
+} from "@/data/services";
+import {
+  checkVoucher,
+  createBillCheck,
+  createOrder,
+  getPayment,
+} from "@/lib/db/client";
+import { SERVICE_UNAVAILABLE_MESSAGE, toPublicError } from "@/lib/db/errors";
+import type { PaymentInfo, VoucherCheck, WebBrand } from "@/lib/db/types";
+import { digits, maskNomor, rp } from "@/lib/format";
+import { saveRef } from "@/lib/tx";
 
-type Step = 1 | 2 | 3;
+type Step = 1 | 2;
+type Pending = "order" | "bill" | null;
 
-const digits = (s: string) => s.replace(/\D/g, "");
+function fieldsOf(service: Service): ServiceInputField[] {
+  if (service.inputFields.length > 0) return service.inputFields;
+  return [
+    {
+      key: "nomor",
+      label: service.field,
+      placeholder: service.placeholder,
+      wajib: true,
+    },
+  ];
+}
+
+function isPhoneField(field?: ServiceInputField): boolean {
+  if (!field) return false;
+  return /hp|whatsapp/i.test(field.label) || (field.placeholder ?? "").startsWith("08");
+}
 
 export function TransactionFlow({
+  services,
+  paymentMethods,
+  brand,
   fixedService = null,
   initialNo = "",
   initialVoucher = "",
 }: {
+  services: Service[];
+  paymentMethods: PayMethod[];
+  brand: WebBrand;
   fixedService?: Service | null;
   initialNo?: string;
   initialVoucher?: string;
 }) {
-  const [svcId, setSvcId] = useState<string>(fixedService?.id ?? SERVICES[0].id);
-  const [num, setNum] = useState(initialNo);
+  const firstService = fixedService ?? services[0] ?? null;
+  const [svcId, setSvcId] = useState<string>(firstService?.id ?? "");
+  const [inputs, setInputs] = useState<Record<string, string>>(() => {
+    const initialService = firstService;
+    const firstField = initialService ? fieldsOf(initialService)[0] : null;
+    return firstField ? { [firstField.key]: initialNo } : {};
+  });
+  const [wa, setWa] = useState("");
   const [item, setItem] = useState<ProductItem | null>(null);
   const [pay, setPay] = useState(0);
-  const [voucher, setVoucher] = useState<string | null>(null);
-  const [voucherInput, setVoucherInput] = useState("");
-  const [invalidCode, setInvalidCode] = useState(false);
+  const [voucherInput, setVoucherInput] = useState(
+    initialVoucher.trim().toUpperCase(),
+  );
+  const [voucher, setVoucher] = useState<string | null>(
+    initialVoucher.trim().toUpperCase() || null,
+  );
+  const [voucherPreview, setVoucherPreview] = useState<VoucherCheck | null>(null);
+  const [voucherChecking, setVoucherChecking] = useState(false);
   const [showErr, setShowErr] = useState(false);
-  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState<Pending>(null);
   const [step, setStep] = useState<Step>(1);
-  const [countdown, setCountdown] = useState(900);
-  const [tx, setTx] = useState<Tx | null>(null);
-  const [verifying, setVerifying] = useState(false);
+  const [payment, setPayment] = useState<PaymentInfo | null>(null);
 
-  const cur: Service = fixedService ?? serviceById(svcId) ?? SERVICES[0];
-  const method = ACTIVE_PAY_METHODS[pay] ?? ACTIVE_PAY_METHODS[0];
-  const valid = digits(num).length >= 8;
+  const cur: Service | null =
+    fixedService ?? services.find((service) => service.id === svcId) ?? services[0] ?? null;
+  const fields = cur ? fieldsOf(cur) : [];
+  const primaryField = fields[0];
+  const primaryValue = primaryField ? (inputs[primaryField.key] ?? "") : "";
+  const method = paymentMethods[pay] ?? paymentMethods[0] ?? null;
+  const waDigits = digits(wa);
+  const waValid = /^08\d{8,12}$/.test(waDigits);
 
-  /** potongan voucher */
-  const disc = useMemo(() => {
-    if (!voucher || !item) return 0;
-    const v = VOUCHERS[voucher];
-    if (!v) return 0;
-    if (v.only && !v.only.includes(cur.id)) return 0;
-    if (v.min && item[1] < v.min) return 0;
-    return v.pct ? Math.min(Math.round((item[1] * v.pct) / 100), v.max ?? 0) : v.flat ?? 0;
-  }, [voucher, item, cur.id]);
+  const valid =
+    !!cur &&
+    fields.length > 0 &&
+    fields.every(
+      (field) =>
+        !field.wajib || (inputs[field.key] ?? "").trim().length > 0,
+    ) &&
+    (!isPhoneField(primaryField) || digits(primaryValue).length >= 8);
 
-  const total = item ? Math.max(0, item[1] + method.fee - disc) : 0;
-
-  /** deteksi operator dari awalan nomor */
   const operator = useMemo(() => {
-    const isHp = cur.id === "pulsa" || cur.id === "data";
-    let d = digits(num);
+    const isHp = cur?.id === "pulsa" || cur?.id === "data";
+    let d = digits(primaryValue);
     if (d.startsWith("62")) d = "0" + d.slice(2);
     else if (d.startsWith("8")) d = "0" + d;
-    if (!isHp || d.length < 4) return { found: null as null | (typeof OPERATORS)[number], unknown: false };
+    if (!isHp || d.length < 4) {
+      return { found: null as null | (typeof OPERATORS)[number], unknown: false };
+    }
     const found = OPERATORS.find((o) => o.prefixes.includes(d.slice(0, 4))) ?? null;
     return { found, unknown: !found };
-  }, [num, cur.id]);
+  }, [primaryValue, cur?.id]);
 
+  const disc = voucherPreview?.valid ? voucherPreview.potongan : 0;
+  const total = item ? Math.max(0, item[1] + (method?.fee ?? 0) - disc) : 0;
   const title = fixedService
     ? `${fixedService.bill ? "Bayar " : "Beli "}${fixedService.name}`
     : "Transaksi";
 
   /* ---------- efek ---------- */
 
-  // ambil layanan / nomor / voucher tersimpan saat pertama buka
   useEffect(() => {
-    if (!fixedService) {
-      const s = getStored("ldx_svc");
-      if (s && serviceById(s)) setSvcId(s);
+    if (!voucher || !cur) {
+      setVoucherPreview(null);
+      setVoucherChecking(false);
+      return;
     }
-    if (!initialNo) {
-      const n = getStored("ldx_no");
-      if (n) setNum(n);
-      removeStored("ldx_no");
-    }
-    const v = (initialVoucher || getStored("ldx_voucher") || "").trim().toUpperCase();
-    if (v) {
-      setVoucherInput(v);
-      if (VOUCHERS[v]) setVoucher(v);
-      else setInvalidCode(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
-  // hitung mundur di langkah pembayaran
-  useEffect(() => {
-    if (step !== 2) return;
-    setCountdown(900);
-    const t = setInterval(() => setCountdown((c) => Math.max(0, c - 1)), 1000);
-    return () => clearInterval(t);
-  }, [step]);
+    let active = true;
+    setVoucherChecking(true);
+    checkVoucher({
+      brandSlug: brand.slug,
+      code: voucher,
+      serviceId: cur.dbId,
+      subtotal: item?.[1] ?? 0,
+    })
+      .then((result) => {
+        if (active) setVoucherPreview(result);
+      })
+      .catch((err) => {
+        if (active) {
+          setVoucherPreview({
+            valid: false,
+            potongan: 0,
+            pesan: toPublicError(err).message,
+          });
+        }
+      })
+      .finally(() => {
+        if (active) setVoucherChecking(false);
+      });
 
-  // selalu mulai dari atas saat ganti langkah
+    return () => {
+      active = false;
+    };
+  }, [voucher, cur?.dbId, item?.[1], brand.slug]);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
   /* ---------- aksi ---------- */
 
-  const pickService = (id: string) => {
+  const selectService = (id: string) => {
+    const next = services.find((service) => service.id === id);
+    if (!next) return;
+    const nextFields = fieldsOf(next);
     setSvcId(id);
+    setInputs(nextFields[0] ? { [nextFields[0].key]: primaryValue } : {});
     setItem(null);
     setShowErr(false);
-    setStored("ldx_svc", id);
+    setError(null);
   };
 
-  const checkBill = () => {
-    if (!valid) {
-      setShowErr(true);
-      return;
-    }
-    setChecking(true);
-    setTimeout(() => {
-      const amount = (Math.floor(Math.random() * 40) + 8) * 5000;
-      setItem([`Tagihan ${cur.name}`, amount]);
-      setChecking(false);
-    }, 700);
+  const updateInput = (key: string, value: string, phone: boolean) => {
+    setInputs((current) => ({
+      ...current,
+      [key]: phone ? value.replace(/[^\d +]/g, "") : value,
+    }));
+    setShowErr(false);
+    setError(null);
   };
 
-  const applyVoucher = (raw?: string) => {
-    const code = (raw ?? voucherInput).trim().toUpperCase();
-    if (!code) {
-      setVoucher(null);
-      setInvalidCode(false);
-      setVoucherInput("");
-      return;
-    }
+  const applyVoucher = () => {
+    const code = voucherInput.trim().toUpperCase();
     setVoucherInput(code);
-    if (!VOUCHERS[code]) {
-      setVoucher(null);
-      setInvalidCode(true);
-      return;
-    }
-    setInvalidCode(false);
-    setVoucher(code);
+    setVoucher(code || null);
+    if (!code) setVoucherPreview(null);
+    setError(null);
   };
 
   const toggleVoucher = () => {
     if (voucher) {
       setVoucher(null);
-      setInvalidCode(false);
       setVoucherInput("");
+      setVoucherPreview(null);
     } else {
       applyVoucher();
     }
   };
 
-  const goPay = () => {
-    if (!valid || !item) {
+  const inputPayload = () => {
+    const result: Record<string, string> = {};
+    fields.forEach((field) => {
+      result[field.key] = (inputs[field.key] ?? "").trim();
+    });
+    return result;
+  };
+
+  const handleNominal = async () => {
+    if (!cur || !item || !method || !valid || pending) {
       setShowErr(true);
       return;
     }
-    setTx({
-      ref: "REF-LDX" + Date.now().toString().slice(-8),
-      svc: cur.name,
-      svcId: cur.id,
-      prod: item[0],
-      no: num.trim(),
-      method: method.name,
-      admin: method.fee,
-      total,
-      disc,
-      voucher: disc ? voucher : null,
-      time: new Date().toISOString(),
-      status: "Menunggu",
-      sn: "",
-    });
-    setStep(2);
+    if (!item[2]) {
+      setError(SERVICE_UNAVAILABLE_MESSAGE);
+      return;
+    }
+
+    setPending("order");
+    setError(null);
+    try {
+      const created = await createOrder({
+        brandSlug: brand.slug,
+        serviceId: cur.dbId,
+        productId: item[2],
+        nomorTujuan: primaryValue.trim(),
+        input: inputPayload(),
+        paymentMethodId: method.id,
+        voucherCode: voucherPreview?.valid ? voucher : null,
+      });
+      saveRef(created.ref);
+
+      let detail: PaymentInfo;
+      try {
+        detail = await getPayment(created.ref);
+      } catch {
+        detail = {
+          ref: created.ref,
+          status: "menunggu_bayar",
+          total: created.total,
+          nama_layanan: cur.name,
+          nama_produk: item[0],
+          nomor_tujuan: maskNomor(primaryValue.trim()),
+          metode_bayar: method.name,
+          tipe_metode:
+            method.type === "ew" ? "ewallet" : method.type,
+          biaya_admin: method.fee,
+          potongan: disc,
+          voucher_kode: voucherPreview?.valid ? voucher : null,
+          qris_image_url: brand.qris_image_url,
+          logo_url: brand.logo_url,
+          nama_brand: brand.nama,
+          wa_cs: brand.wa_cs,
+          expires_at: created.expires_at,
+          jam_cek_tagihan: brand.jam_cek_tagihan,
+          nominal_tagihan: null,
+          denda: 0,
+          created_at: new Date().toISOString(),
+        };
+      }
+
+      setPayment(detail);
+      setStep(2);
+    } catch (err) {
+      setError(toPublicError(err).message);
+    } finally {
+      setPending(null);
+    }
   };
 
-  const confirmPaid = () => {
-    if (!tx) return;
-    setVerifying(true);
-    setTimeout(() => {
-      setTx({ ...tx, status: "Diproses", sn: "Dikirim setelah verifikasi" });
-      saveTx({ ...tx, status: "Diproses", sn: "Dikirim setelah verifikasi" });
-      setVerifying(false);
-      setStep(3);
-    }, 1200);
+  const handleBill = async () => {
+    if (!cur || !method || !valid || !waValid || pending) {
+      setShowErr(true);
+      return;
+    }
+
+    setPending("bill");
+    setError(null);
+    try {
+      const created = await createBillCheck({
+        brandSlug: brand.slug,
+        serviceId: cur.dbId,
+        nomorTujuan: primaryValue.trim(),
+        input: inputPayload(),
+        waPembeli: waDigits,
+        paymentMethodId: method.id,
+        voucherCode: voucherPreview?.valid ? voucher : null,
+      });
+      saveRef(created.ref);
+
+      let detail: PaymentInfo;
+      try {
+        detail = await getPayment(created.ref);
+      } catch {
+        detail = {
+          ref: created.ref,
+          status: "menunggu_cek",
+          total: null,
+          nama_layanan: cur.name,
+          nama_produk: null,
+          nomor_tujuan: maskNomor(primaryValue.trim()),
+          metode_bayar: method.name,
+          tipe_metode:
+            method.type === "ew" ? "ewallet" : method.type,
+          biaya_admin: method.fee,
+          potongan: 0,
+          voucher_kode: voucherPreview?.valid ? voucher : null,
+          qris_image_url: brand.qris_image_url,
+          logo_url: brand.logo_url,
+          nama_brand: brand.nama,
+          wa_cs: brand.wa_cs,
+          expires_at: null,
+          jam_cek_tagihan: created.jam_cek_tagihan ?? brand.jam_cek_tagihan,
+          nominal_tagihan: null,
+          denda: 0,
+          created_at: new Date().toISOString(),
+        };
+      }
+
+      setPayment(detail);
+      setStep(2);
+    } catch (err) {
+      setError(toPublicError(err).message);
+    } finally {
+      setPending(null);
+    }
   };
 
-  /* ---------- pesan voucher ---------- */
   const vMsg = (() => {
-    if (invalidCode) return { cls: "text-red-500", text: "Kode voucher tidak valid." };
-    if (!voucher) return null;
-    const v = VOUCHERS[voucher];
-    if (!item)
+    if (voucherChecking) return { cls: "text-[#6b7394]", text: "Memeriksa voucher…" };
+    if (!voucher || !voucherPreview) return null;
+    if (!voucherPreview.valid) {
+      return { cls: "text-red-500", text: voucherPreview.pesan };
+    }
+    if (!item) {
       return {
         cls: "text-[#6b7394]",
         text: `Voucher ${voucher} dipasang. Pilih produk untuk melihat potongan.`,
       };
-    if (disc) return { cls: "text-[#16835e] font-semibold", text: `✓ ${v.label}` };
-    if (v.only && !v.only.includes(cur.id))
-      return {
-        cls: "text-[#c25a17]",
-        text: "Voucher hanya untuk pulsa, paket data & token PLN.",
-      };
-    return { cls: "text-[#c25a17]", text: `Minimal transaksi ${rp(v.min ?? 0)}.` };
+    }
+    if (voucherPreview.potongan > 0) {
+      return { cls: "text-[#16835e] font-semibold", text: `✓ ${voucherPreview.pesan}` };
+    }
+    return { cls: "text-[#c25a17]", text: voucherPreview.pesan };
   })();
 
-  const stepCls = (i: Step) => "step" + (step > i ? " done" : step === i ? " on" : "");
+  const invalidMessage = isPhoneField(primaryField)
+    ? "Mohon isi nomor dengan benar (min. 8 digit)."
+    : "Mohon lengkapi data pembeli.";
+  const stepCls = (i: number) => "step" + (step > i ? " done" : step === i ? " on" : "");
+  const ctaLabel =
+    pending === "order"
+      ? "Memproses…"
+      : pending === "bill"
+        ? "Mengecek…"
+        : cur?.bill
+          ? "Cek Tagihan"
+          : "Lanjut ke Pembayaran";
+  const ctaDisabled =
+    pending !== null ||
+    voucherChecking ||
+    !valid ||
+    !method ||
+    (cur?.bill ? !waValid : !item);
+
+  if (!cur) {
+    return (
+      <main className="max-w-6xl mx-auto px-5 py-8 md:py-12">
+        <DataUnavailable message="Belum ada layanan aktif saat ini." />
+      </main>
+    );
+  }
 
   return (
     <main className="max-w-6xl mx-auto px-5 py-8 md:py-12">
@@ -213,7 +378,7 @@ export function TransactionFlow({
       <div className="flex items-center gap-4">
         {fixedService && (
           <span className={`rounded-2xl p-3 w-14 h-14 shrink-0 t-${fixedService.tone}`}>
-            <Icon name={fixedService.id as IconName} />
+            <Icon name={fixedService.icon} />
           </span>
         )}
         <div>
@@ -234,7 +399,7 @@ export function TransactionFlow({
         </div>
         <div className={"bar" + (step > 1 ? " done" : "")} />
         <div className={stepCls(2)}>
-          <span className="n">{step > 2 ? "✓" : 2}</span>
+          <span className="n">2</span>
           <span className="hidden sm:inline">Pembayaran</span>
         </div>
         <div className={"bar" + (step > 2 ? " done" : "")} />
@@ -249,16 +414,16 @@ export function TransactionFlow({
         <section className="mt-6">
           {!fixedService && (
             <div className="flex gap-2 overflow-x-auto pb-2">
-              {SERVICES.map((s) => (
+              {services.map((s) => (
                 <button
                   key={s.id}
                   type="button"
-                  onClick={() => pickService(s.id)}
+                  onClick={() => selectService(s.id)}
                   className={`opt py-2 px-4 whitespace-nowrap font-semibold text-sm flex items-center gap-2 ${
                     s.id === cur.id ? "active" : ""
                   }`}
                 >
-                  <Icon name={s.id as IconName} className="w-5 h-5" />
+                  <Icon name={s.icon as IconName} className="w-5 h-5" />
                   {s.name}
                 </button>
               ))}
@@ -268,81 +433,125 @@ export function TransactionFlow({
           <div className="mt-4 grid lg:grid-cols-[1fr_360px] gap-6 items-start">
             {/* form */}
             <div className="card p-6 md:p-8 space-y-7">
-              <div>
-                <label htmlFor="num" className="font-bold block mb-2">
-                  {cur.field}
-                </label>
-                <div className="relative">
-                  <input
-                    id="num"
-                    className="field pr-36"
-                    inputMode="numeric"
-                    value={num}
-                    onChange={(e) => {
-                      setNum(e.target.value.replace(/[^\d +]/g, ""));
-                      setShowErr(false);
-                    }}
-                    placeholder={cur.placeholder}
-                  />
-                  {operator.found && (
-                    <span
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-extrabold text-white"
-                      style={{
-                        background: operator.found.color,
-                        color: operator.found.name === "Indosat" ? "#16204a" : "#fff",
-                      }}
-                    >
-                      <span className="w-4 h-4 rounded-full bg-white/30 grid place-items-center text-[9px]">
-                        {operator.found.name[0]}
-                      </span>
-                      {operator.found.name}
-                    </span>
-                  )}
-                </div>
+              <div className="space-y-4">
+                {fields.map((field, index) => {
+                  const phone = isPhoneField(field);
+                  return (
+                    <div key={field.key}>
+                      <label htmlFor={`input-${field.key}`} className="font-bold block mb-2">
+                        {field.label}
+                      </label>
+                      <div className="relative">
+                        <input
+                          id={`input-${field.key}`}
+                          className={`field ${index === 0 && operator.found ? "pr-36" : ""}`}
+                          inputMode={phone ? "numeric" : "text"}
+                          value={inputs[field.key] ?? ""}
+                          onChange={(e) =>
+                            updateInput(field.key, e.target.value, phone)
+                          }
+                          placeholder={field.placeholder ?? ""}
+                        />
+                        {index === 0 && operator.found && (
+                          <span
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-extrabold text-white"
+                            style={{
+                              background: operator.found.color,
+                              color:
+                                operator.found.name === "Indosat" ? "#16204a" : "#fff",
+                            }}
+                          >
+                            <span className="w-4 h-4 rounded-full bg-white/30 grid place-items-center text-[9px]">
+                              {operator.found.name[0]}
+                            </span>
+                            {operator.found.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
                 {operator.unknown && (
-                  <p className="text-xs text-[#6b7394] mt-2">
+                  <p className="text-xs text-[#6b7394]">
                     Operator tidak dikenali, periksa kembali nomor HP.
                   </p>
                 )}
-                <p className={`text-red-500 text-sm mt-2 ${showErr && !valid ? "" : "hidden"}`}>
-                  Mohon isi nomor dengan benar (min. 8 digit).
+                <p
+                  className={`text-red-500 text-sm ${showErr && !valid ? "" : "hidden"}`}
+                >
+                  {invalidMessage}
                 </p>
+
+                {cur.bill && (
+                  <div>
+                    <label htmlFor="wa" className="font-bold block mb-2">
+                      Nomor WhatsApp aktif
+                    </label>
+                    <input
+                      id="wa"
+                      className="field"
+                      inputMode="tel"
+                      value={wa}
+                      onChange={(e) => {
+                        setWa(e.target.value.replace(/[^\d +]/g, ""));
+                        setShowErr(false);
+                        setError(null);
+                      }}
+                      placeholder="08xx xxxx xxxx"
+                    />
+                    <p className="text-xs text-[#6b7394] mt-2">
+                      Admin akan mengirim total tagihan dan link pembayaran ke nomor ini.
+                    </p>
+                    <p
+                      className={`text-red-500 text-sm mt-2 ${
+                        showErr && !waValid ? "" : "hidden"
+                      }`}
+                    >
+                      Masukkan nomor WhatsApp aktif dengan format 08xx.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* nominal / cek tagihan */}
               <div>
-                <div className="font-bold mb-3">{cur.bill ? "Cek tagihan" : "Pilih nominal"}</div>
+                <div className="font-bold mb-3">
+                  {cur.bill ? "Cek tagihan" : "Pilih nominal"}
+                </div>
                 {cur.bill ? (
                   <div className="grid grid-cols-2 gap-3">
-                    <button type="button" onClick={checkBill} disabled={checking} className="btn btn-ghost col-span-2">
-                      {checking ? "Mengecek…" : item ? "Cek Ulang" : "Cek Tagihan"}
+                    <button
+                      type="button"
+                      onClick={handleBill}
+                      disabled={ctaDisabled}
+                      className="btn btn-ghost col-span-2"
+                    >
+                      {pending === "bill" ? "Mengecek…" : "Cek Tagihan"}
                     </button>
-                    {item && (
-                      <div className="opt active col-span-2 flex justify-between items-center">
-                        <span>
-                          <b>Tagihan bulan ini</b>
-                          <br />
-                          <span className="text-xs text-[#6b7394]">
-                            a.n. Pelanggan ****{digits(num).slice(-4)}
-                          </span>
-                        </span>
-                        <b className="text-[#3b4fd8]">{rp(item[1])}</b>
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
-                    {cur.items?.map((it) => (
-                      <button
-                        key={it[0]}
-                        type="button"
-                        onClick={() => setItem(it)}
-                        className={`opt ${item?.[0] === it[0] ? "active" : ""}`}
-                      >
-                        <div className="font-semibold">{it[0]}</div>
-                        <div className="text-[#3b4fd8] font-bold mt-1">{rp(it[1])}</div>
-                      </button>
-                    ))}
+                    {cur.items && cur.items.length > 0 ? (
+                      cur.items.map((it) => (
+                        <button
+                          key={it[0]}
+                          type="button"
+                          onClick={() => {
+                            setItem(it);
+                            setError(null);
+                          }}
+                          className={`opt ${item?.[0] === it[0] ? "active" : ""}`}
+                        >
+                          <div className="font-semibold">{it[0]}</div>
+                          <div className="text-[#3b4fd8] font-bold mt-1">{rp(it[1])}</div>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="col-span-2 text-sm text-[#6b7394]">
+                        Belum ada nominal aktif untuk layanan ini.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -350,21 +559,30 @@ export function TransactionFlow({
               {/* metode bayar */}
               <div>
                 <div className="font-bold mb-3">Metode pembayaran</div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {ACTIVE_PAY_METHODS.map((p, i) => (
-                    <button
-                      key={p.name}
-                      type="button"
-                      onClick={() => setPay(i)}
-                      className={`opt ${i === pay ? "active" : ""}`}
-                    >
-                      <div className="font-semibold text-sm">{p.name}</div>
-                      <div className="text-xs text-[#6b7394]">
-                        {p.fee ? `Admin ${rp(p.fee)}` : "Gratis admin"}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                {paymentMethods.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {paymentMethods.map((p, i) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          setPay(i);
+                          setError(null);
+                        }}
+                        className={`opt ${i === pay ? "active" : ""}`}
+                      >
+                        <div className="font-semibold text-sm">{p.name}</div>
+                        <div className="text-xs text-[#6b7394]">
+                          {p.fee ? `Admin ${rp(p.fee)}` : "Gratis admin"}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-[#6b7394]">
+                    Belum ada metode pembayaran aktif.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -373,10 +591,20 @@ export function TransactionFlow({
               <div className="font-bold text-lg">Ringkasan</div>
               <div className="mt-4 space-y-3 text-sm">
                 <Row label="Layanan" value={cur.name} />
-                <Row label="Nomor" value={num || "-"} />
+                {fields.map((field) => (
+                  <Row
+                    key={field.key}
+                    label={field.label}
+                    value={inputs[field.key] || "-"}
+                  />
+                ))}
+                {cur.bill && <Row label="WhatsApp" value={wa || "-"} />}
                 <Row label="Produk" value={item ? item[0] : "-"} alignRight />
-                <Row label="Metode" value={method.name} />
-                <Row label="Biaya admin" value={item ? rp(method.fee) : "Rp0"} />
+                <Row label="Metode" value={method?.name ?? "-"} />
+                <Row
+                  label="Biaya admin"
+                  value={method ? rp(method.fee) : "-"}
+                />
               </div>
 
               <div className="mt-5">
@@ -400,6 +628,7 @@ export function TransactionFlow({
                   <button
                     type="button"
                     onClick={toggleVoucher}
+                    disabled={voucherChecking || pending !== null}
                     className="btn btn-ghost py-2 px-4 text-sm shrink-0"
                   >
                     {voucher ? "Hapus" : "Pakai"}
@@ -408,7 +637,7 @@ export function TransactionFlow({
                 {vMsg && <p className={`text-xs mt-2 ${vMsg.cls}`}>{vMsg.text}</p>}
               </div>
 
-              {disc > 0 && (
+              {!cur.bill && disc > 0 && (
                 <div className="mt-3 text-sm flex justify-between">
                   <span className="text-[#16835e] font-semibold">Diskon voucher</span>
                   <b className="text-[#16835e]">-{rp(disc)}</b>
@@ -418,19 +647,27 @@ export function TransactionFlow({
               <div className="border-t border-dashed border-[#d9dcf0] my-5" />
               <div className="flex justify-between items-end">
                 <span className="text-[#6b7394]">Total</span>
-                <span className="text-2xl font-extrabold text-[#3b4fd8]">{rp(total)}</span>
+                <span className="text-2xl font-extrabold text-[#3b4fd8]">
+                  {cur.bill ? "Dihitung admin" : rp(total)}
+                </span>
               </div>
+
+              {error && (
+                <p className="text-red-500 text-sm mt-3" role="alert">
+                  {error}
+                </p>
+              )}
 
               <button
                 type="button"
-                onClick={goPay}
-                disabled={!item}
+                onClick={cur.bill ? handleBill : handleNominal}
+                disabled={ctaDisabled}
                 className="btn w-full mt-6"
               >
-                Lanjut ke Pembayaran
+                {ctaLabel}
               </button>
               <p className="text-xs text-[#6b7394] mt-3 text-center">
-                Mode demo, belum terhubung ke payment gateway.
+                Pembayaran manual, bukti dikirim lewat WhatsApp dan dicek admin.
               </p>
             </aside>
           </div>
@@ -438,161 +675,9 @@ export function TransactionFlow({
       )}
 
       {/* ============================ LANGKAH 2 ============================ */}
-      {step === 2 && tx && (
+      {step === 2 && payment && (
         <section className="mt-6">
-          <div className="max-w-xl mx-auto card p-6 md:p-8 text-center">
-            <div className="flex justify-between items-center text-sm">
-              <span className="badge b-wait">Menunggu pembayaran</span>
-              <span className="font-semibold text-[#6b7394]">
-                Sisa waktu <b className="text-[#16204a]">{fmtCountdown(countdown)}</b>
-              </span>
-            </div>
-
-            <div className="mt-6 text-[#6b7394] text-sm">Total pembayaran</div>
-            <div className="text-3xl font-extrabold text-[#3b4fd8]">{rp(tx.total)}</div>
-
-            <div className="mt-6">
-              {method.type === "qr" && <QrisBox amount={rp(tx.total)} />}
-              {method.type === "va" && (
-                <div>
-                  <div className="text-sm text-[#6b7394]">Nomor Virtual Account</div>
-                  <div className="mt-1 text-2xl font-extrabold font-mono tracking-wider">
-                    8808 {tx.ref.slice(-8, -4)} {tx.ref.slice(-4)} 21
-                  </div>
-                  <p className="text-sm text-[#6b7394] mt-3">
-                    Transfer lewat m-banking / ATM sesuai total di atas.
-                  </p>
-                </div>
-              )}
-              {method.type === "ew" && (
-                <div>
-                  <div className="w-16 h-16 mx-auto rounded-2xl t-purple p-4">
-                    <Icon name="wallet" />
-                  </div>
-                  <p className="text-sm text-[#6b7394] mt-3">
-                    Notifikasi pembayaran dikirim ke aplikasi <b>{method.name}</b> kamu. Buka
-                    aplikasi lalu konfirmasi.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-5 text-left bg-[#f4f6fd] rounded-2xl p-4 text-sm space-y-1.5">
-              <Row label="Produk" value={tx.prod} bold alignRight />
-              <Row label="Nomor tujuan" value={tx.no} bold />
-              <Row label="Kode referensi" value={tx.ref} bold mono />
-            </div>
-
-            <button type="button" onClick={confirmPaid} disabled={verifying} className="btn w-full mt-6">
-              {verifying ? "Memverifikasi…" : "Saya Sudah Bayar"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="w-full mt-3 text-sm font-semibold text-[#6b7394]"
-            >
-              ← Ubah pesanan
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* ============================ LANGKAH 3 ============================ */}
-      {step === 3 && tx && (
-        <section className="mt-6">
-          <div className="max-w-md mx-auto card overflow-hidden">
-            <div
-              className="p-8 text-center text-white"
-              style={{ background: "linear-gradient(135deg,#3b4fd8,#7a5cf2)" }}
-            >
-              <div className="w-16 h-16 mx-auto rounded-full bg-white text-[#b7700b] p-4 animate-pulse">
-                <Icon name="clock" />
-              </div>
-              <h2 className="text-2xl font-extrabold mt-4">Terima kasih!</h2>
-              <p className="text-white/90 mt-1">Pembayaran Anda sedang dalam pengecekan.</p>
-              <p className="text-white/70 text-xs mt-2">{fmtDate(tx.time)}</p>
-            </div>
-
-            <div className="p-6 text-sm space-y-3">
-              <Row
-                label="Status"
-                value={<span className="badge b-wait">Sedang dicek</span>}
-                alignRight
-              />
-              <Row label="Kode referensi" value={tx.ref} bold mono alignRight />
-              <Row label="Layanan" value={tx.svc} bold alignRight />
-              <Row label="Produk" value={tx.prod} bold alignRight />
-              <Row label="Nomor tujuan" value={tx.no} bold alignRight />
-              <Row label="Metode" value={tx.method} bold alignRight />
-              <Row
-                label={/PLN/.test(tx.svc) ? "Token" : "Serial number"}
-                value={tx.sn}
-                bold
-                mono
-                accent
-                alignRight
-              />
-              {tx.disc > 0 && (
-                <Row
-                  label={`Voucher ${tx.voucher}`}
-                  value={`-${rp(tx.disc)}`}
-                  bold
-                  accentGreen
-                  alignRight
-                />
-              )}
-              <div className="border-t border-dashed border-[#d9dcf0]" />
-              <Row
-                label="Total dibayar"
-                value={rp(tx.total)}
-                bold
-                accent
-                alignRight
-                big
-              />
-              <p className="text-xs text-[#6b7394] bg-[#fff8eb] rounded-xl p-3 mt-2">
-                Verifikasi biasanya 1–5 menit. Simpan kode referensi dan pantau statusnya di menu
-                Cek Transaksi.
-              </p>
-            </div>
-
-            <div className="px-6">
-              <a
-                href={waConfirmLink({
-                  ref: tx.ref,
-                  prod: tx.prod,
-                  no: tx.no,
-                  method: tx.method,
-                  total: rp(tx.total),
-                })}
-                target="_blank"
-                rel="noopener"
-                className="btn w-full"
-                style={{ background: "#25d366", boxShadow: "0 10px 24px -10px rgba(37,211,102,.7)" }}
-              >
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor" aria-hidden="true">
-                  <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z" />
-                </svg>
-                Konfirmasi via WhatsApp
-              </a>
-              <p className="text-xs text-center text-[#6b7394] mt-2 mb-4">
-                Kirim bukti bayar ke CS agar verifikasi lebih cepat.
-              </p>
-            </div>
-
-            <div className="px-6 pb-6 grid grid-cols-2 gap-3">
-              <Link
-                href={`/cek?q=${encodeURIComponent(tx.ref)}`}
-                onClick={() => setStored("ldx_q", tx.ref)}
-                className="btn btn-ghost"
-              >
-                Cek Status
-              </Link>
-              <Link href="/bayar" className="btn">
-                Transaksi Lagi
-              </Link>
-            </div>
-          </div>
+          <PaymentDetail payment={payment} />
         </section>
       )}
     </main>

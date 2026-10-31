@@ -3,26 +3,49 @@
 import { useMemo, useState } from "react";
 import { Icon, type IconName } from "./icon";
 import { FAQ } from "@/data/faq";
-import { CS_PHONE_DISPLAY, CS_WA } from "@/lib/config";
+import { waDisplay, waLink } from "@/lib/format";
 
 const TOPICS: [string, string][] = [["all", "Semua"], ...FAQ.map((f) => [f[0], f[1]] as [string, string])];
 
-const QUICK: { icon: IconName; tone: string; title: string; sub: string; href?: string; topic?: string }[] = [
-  { icon: "search", tone: "blue", title: "Cek Transaksi", sub: "Lacak status pesanan", href: "/cek" },
-  {
-    icon: "chat",
-    tone: "green",
-    title: "Chat CS",
-    sub: "Via WhatsApp",
-    href: `https://wa.me/${CS_WA}?text=${encodeURIComponent("Halo CS Ludovex Digital, saya butuh bantuan.")}`,
-  },
-  { icon: "wallet", tone: "peach", title: "Refund", sub: "Transaksi gagal", topic: "refund" },
-  { icon: "shield", tone: "purple", title: "Keamanan", sub: "Tips bertransaksi aman", topic: "akun" },
-];
-
-export function HelpCenter() {
+export function HelpCenter({
+  brandName = "PPOB",
+  waCs = null,
+}: {
+  brandName?: string;
+  waCs?: string | null;
+}) {
   const [q, setQ] = useState("");
   const [topic, setTopic] = useState("all");
+
+  const waNumber = waDisplay(waCs);
+  const waHref = waLink(
+    waCs,
+    `Halo CS ${brandName}, saya butuh bantuan.`,
+  );
+
+  const quick: {
+    icon: IconName;
+    tone: string;
+    title: string;
+    sub: string;
+    href?: string;
+    topic?: string;
+  }[] = [
+    { icon: "search", tone: "blue", title: "Cek Transaksi", sub: "Lacak status pesanan", href: "/cek" },
+    ...(waHref
+      ? [
+          {
+            icon: "chat" as IconName,
+            tone: "green",
+            title: "Chat CS",
+            sub: "Via WhatsApp",
+            href: waHref,
+          },
+        ]
+      : []),
+    { icon: "wallet", tone: "peach", title: "Refund", sub: "Transaksi gagal", topic: "refund" },
+    { icon: "shield", tone: "purple", title: "Keamanan", sub: "Tips bertransaksi aman", topic: "akun" },
+  ];
 
   const query = q.trim().toLowerCase();
 
@@ -83,7 +106,7 @@ export function HelpCenter() {
       <main className="max-w-5xl mx-auto px-5 -mt-14 relative">
         {/* akses cepat */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {QUICK.map((c) =>
+          {quick.map((c) =>
             c.href ? (
               <a
                 key={c.title}
@@ -168,15 +191,17 @@ export function HelpCenter() {
                 <p className="text-sm text-[#6b7394] mt-1">
                   Tanyakan langsung ke tim kami, kami bantu sampai beres.
                 </p>
-                <a
-                  href={`https://wa.me/${CS_WA}`}
-                  target="_blank"
-                  rel="noopener"
-                  className="btn mt-4"
-                  style={{ background: "#25d366" }}
-                >
-                  Chat WhatsApp
-                </a>
+                {waHref ? (
+                  <a
+                    href={waHref}
+                    target="_blank"
+                    rel="noopener"
+                    className="btn mt-4"
+                    style={{ background: "#25d366" }}
+                  >
+                    Chat WhatsApp
+                  </a>
+                ) : null}
               </div>
             )}
           </div>
@@ -192,17 +217,19 @@ export function HelpCenter() {
             <p className="text-[#6b7394] mt-2">
               Siapkan kode referensi transaksi agar tim kami bisa membantu lebih cepat.
             </p>
-            <p className="mt-3 font-bold">WhatsApp: {CS_PHONE_DISPLAY}</p>
+            {waNumber ? <p className="mt-3 font-bold">WhatsApp: {waNumber}</p> : null}
           </div>
-          <a
-            href={`https://wa.me/${CS_WA}?text=${encodeURIComponent("Halo CS Ludovex Digital, saya butuh bantuan.")}`}
-            target="_blank"
-            rel="noopener"
-            className="btn px-7 py-4"
-            style={{ background: "#25d366" }}
-          >
-            Hubungi CS via WhatsApp
-          </a>
+          {waHref ? (
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener"
+              className="btn px-7 py-4"
+              style={{ background: "#25d366" }}
+            >
+              Hubungi CS via WhatsApp
+            </a>
+          ) : null}
         </section>
       </main>
     </>

@@ -3,16 +3,19 @@ import { CopyVoucher, QuickCekForm, QuickPayForm } from "@/components/home-forms
 import { Icon } from "@/components/icon";
 import { Reveal } from "@/components/reveal";
 import { ServiceGrid } from "@/components/service-grid";
+import { DataUnavailable } from "@/components/data-unavailable";
 import { HOME_FAQ } from "@/data/faq";
-import { POPULAR } from "@/data/services";
 import { BRAND_STRIP } from "@/lib/config";
+import { rp } from "@/lib/format";
+import { buildPopular } from "@/lib/db/popular";
+import { getPublicServices } from "@/lib/db/server";
 
 const STEPS = [
   { n: 1, title: "Pilih layanan", desc: "Pulsa, data, PLN, e-wallet, atau tagihan bulanan." },
   {
     n: 2,
     title: "Isi nomor & nominal",
-    desc: "Nomor HP, ID pelanggan, atau cek tagihan otomatis.",
+    desc: "Nomor HP, ID pelanggan, atau cek tagihan manual.",
   },
   { n: 3, title: "Bayar", desc: "Scan QRIS, e-wallet, atau virtual account bank." },
   { n: 4, title: "Struk terbit", desc: "Simpan kode referensi, pantau di Cek Transaksi." },
@@ -28,7 +31,22 @@ const faqJsonLd = {
   })),
 };
 
-export default function HomePage() {
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const servicesResult = await getPublicServices();
+  const services = servicesResult.data ?? [];
+  const loadError = servicesResult.error;
+  const popular = buildPopular(services);
+  const pln = services.find((service) => service.id === "pln" && !service.bill) ?? null;
+  const dataService =
+    services.find((service) => service.id === "data" && !service.bill && service.items?.length) ??
+    null;
+  const dataProduct =
+    dataService?.items?.find((item) => item[0].toLowerCase().includes("12 gb")) ??
+    dataService?.items?.[0] ??
+    null;
+
   return (
     <>
       {/* HERO */}
@@ -47,7 +65,13 @@ export default function HomePage() {
               detik. Tanpa daftar, struk langsung terbit.
             </p>
 
-            <QuickPayForm />
+            {loadError ? (
+              <div className="mt-8 card p-4 text-sm text-[#6b7394]">
+                Layanan lagi gangguan, coba lagi sebentar.
+              </div>
+            ) : (
+              <QuickPayForm services={services} />
+            )}
 
             <div className="mt-7 flex items-center gap-4">
               <div className="flex -space-x-2">
@@ -112,36 +136,46 @@ export default function HomePage() {
             </div>
 
             <div className="relative grid grid-cols-2 gap-4 mt-4">
-              <Link href="/pln" className="card p-5 hover:-translate-y-1 transition">
-                <div className="flex items-center gap-2">
-                  <span className="t-green rounded-xl p-2 w-10 h-10">
-                    <Icon name="pln" />
-                  </span>
-                  <span className="badge b-ok">Hemat</span>
-                </div>
-                <div className="mt-3 font-extrabold text-lg leading-tight">
-                  Token PLN
-                  <br />
-                  bebas admin
-                </div>
-                <div className="text-xs text-[#6b7394] mt-1">Bayar pakai QRIS</div>
-              </Link>
-              <Link href="/data" className="card p-5 hover:-translate-y-1 transition">
-                <div className="flex items-center gap-2">
-                  <span className="t-purple rounded-xl p-2 w-10 h-10">
-                    <Icon name="data" />
-                  </span>
-                  <span className="badge b-wait">Flash sale</span>
-                </div>
-                <div className="mt-3 font-extrabold text-lg leading-tight">
-                  Data 12 GB
-                  <br />
-                  <span className="text-[#3b4fd8]">Rp60.000</span>
-                </div>
-                <div className="text-xs text-[#6b7394] mt-1">
-                  <s>Rp72.000</s> · aktif 30 hari
-                </div>
-              </Link>
+              {pln ? (
+                <Link
+                  href={`/${pln.route}`}
+                  className="card p-5 hover:-translate-y-1 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`t-${pln.tone} rounded-xl p-2 w-10 h-10`}>
+                      <Icon name={pln.icon} />
+                    </span>
+                    <span className="badge b-ok">Hemat</span>
+                  </div>
+                  <div className="mt-3 font-extrabold text-lg leading-tight">
+                    {pln.name}
+                    <br />
+                    bebas admin
+                  </div>
+                  <div className="text-xs text-[#6b7394] mt-1">Bayar pakai QRIS</div>
+                </Link>
+              ) : null}
+              {dataService && dataProduct ? (
+                <Link
+                  href={`/${dataService.route}`}
+                  className="card p-5 hover:-translate-y-1 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`t-${dataService.tone} rounded-xl p-2 w-10 h-10`}>
+                      <Icon name={dataService.icon} />
+                    </span>
+                    <span className="badge b-wait">Flash sale</span>
+                  </div>
+                  <div className="mt-3 font-extrabold text-lg leading-tight">
+                    {dataProduct[0]}
+                    <br />
+                    <span className="text-[#3b4fd8]">{rp(dataProduct[1])}</span>
+                  </div>
+                  <div className="text-xs text-[#6b7394] mt-1">
+                    {dataService.name} · harga terbaru
+                  </div>
+                </Link>
+              ) : null}
             </div>
           </Reveal>
         </div>
@@ -168,30 +202,45 @@ export default function HomePage() {
               Lihat semua →
             </Link>
           </div>
-          <ServiceGrid />
+          {loadError ? (
+            <div className="mt-7">
+              <DataUnavailable />
+            </div>
+          ) : services.length > 0 ? (
+            <ServiceGrid services={services} />
+          ) : (
+            <div className="mt-7">
+              <DataUnavailable message="Belum ada layanan aktif saat ini." />
+            </div>
+          )}
         </section>
 
         {/* POPULER */}
-        <section id="populer" className="pb-6">
-          <h2 className="text-2xl md:text-3xl font-extrabold">Populer</h2>
-          <div className="mt-6 grid md:grid-cols-3 gap-4">
-            {POPULAR.map((p) => (
-              <Reveal key={p.title} className="card p-5 flex items-center gap-4">
-                <span className={`t-${p.tone} rounded-xl p-3 w-12 h-12 shrink-0`}>
-                  <Icon name={p.icon} />
-                </span>
-                <div className="flex-1">
-                  <div className="font-bold">{p.title}</div>
-                  <div className="text-sm text-[#6b7394]">{p.sub}</div>
-                  <div className="font-extrabold text-[#3b4fd8] mt-1">{p.price}</div>
-                </div>
-                <Link href={`/${p.route}`} className="btn btn-ghost py-2 px-4 text-sm">
-                  Beli
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-        </section>
+        {!loadError && popular.length > 0 ? (
+          <section id="populer" className="pb-6">
+            <h2 className="text-2xl md:text-3xl font-extrabold">Populer</h2>
+            <div className="mt-6 grid md:grid-cols-3 gap-4">
+              {popular.map((p) => (
+                <Reveal
+                  key={`${p.route}-${p.title}`}
+                  className="card p-5 flex items-center gap-4"
+                >
+                  <span className={`t-${p.tone} rounded-xl p-3 w-12 h-12 shrink-0`}>
+                    <Icon name={p.icon} />
+                  </span>
+                  <div className="flex-1">
+                    <div className="font-bold">{p.title}</div>
+                    <div className="text-sm text-[#6b7394]">{p.sub}</div>
+                    <div className="font-extrabold text-[#3b4fd8] mt-1">{p.price}</div>
+                  </div>
+                  <Link href={`/${p.route}`} className="btn btn-ghost py-2 px-4 text-sm">
+                    Beli
+                  </Link>
+                </Reveal>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {/* ALUR */}
         <section id="alur" className="py-16 scroll-mt-24">
@@ -235,7 +284,7 @@ export default function HomePage() {
                 Cek status transaksimu kapan saja
               </h2>
               <p className="text-[#6b7394] mt-2">
-                Masukkan kode referensi (REF-LDX…) atau nomor tujuan untuk melihat status dan
+                Masukkan kode referensi atau nomor tujuan untuk melihat status dan
                 struk.
               </p>
             </div>

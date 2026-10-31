@@ -1,13 +1,22 @@
 import Link from "next/link";
-import { PAYMENT_METHODS_LABEL, CS_WA } from "@/lib/config";
+import { PAYMENT_METHODS_LABEL } from "@/lib/config";
+import { digits } from "@/lib/format";
 import { Logo } from "./logo";
 
-export function Footer() {
+export function Footer({
+  brandName = "PPOB",
+  waCs = null,
+}: {
+  brandName?: string;
+  waCs?: string | null;
+}) {
+  const waNumber = digits(waCs ?? "");
+
   return (
     <footer className="bg-[#10173a] text-white/65 text-sm">
       <div className="max-w-6xl mx-auto px-5 pt-14 pb-8 grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <Logo dark />
+          <Logo dark name={brandName} />
           <p className="mt-4 max-w-xs">
             Platform pembayaran digital untuk pulsa, data, token listrik, dan tagihan
             bulanan. Cepat, aman, harga bersahabat.
@@ -54,14 +63,18 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <a
-                href={`https://wa.me/${CS_WA}`}
-                target="_blank"
-                rel="noopener"
-                className="hover:text-white"
-              >
-                WhatsApp CS
-              </a>
+              {waNumber ? (
+                <a
+                  href={`https://wa.me/${waNumber}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="hover:text-white"
+                >
+                  WhatsApp CS
+                </a>
+              ) : (
+                <span>WhatsApp CS</span>
+              )}
             </li>
           </ul>
 
@@ -101,7 +114,7 @@ export function Footer() {
       </div>
 
       <div className="max-w-6xl mx-auto px-5 py-6 border-t border-white/10 flex flex-col md:flex-row justify-between gap-2 text-xs">
-        <span>© 2026 Ludovex Digital. All rights reserved.</span>
+        <span>© 2026 {brandName}. All rights reserved.</span>
         <span>Dibuat untuk transaksi yang lebih mudah.</span>
       </div>
     </footer>

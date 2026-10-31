@@ -2,136 +2,213 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Icon, type IconName } from "./icon";
-import { SERVICES, type ProductItem } from "@/data/services";
-import { fmtDate, rp } from "@/lib/format";
-import { readTx, type Tx } from "@/lib/tx";
+import { CopyButton } from "./copy-button";
+import { Icon } from "./icon";
+import type { Service } from "@/data/services";
+import { checkOrder } from "@/lib/db/client";
+import { toPublicError } from "@/lib/db/errors";
+import { PUBLIC_STATUS } from "@/lib/db/status";
+import type { OrderLookup } from "@/lib/db/types";
+import { fmtDate, rp, waLink } from "@/lib/format";
+import { readRefs } from "@/lib/tx";
 
-const svcOf = (name: string) => SERVICES.find((s) => s.name === name) ?? SERVICES[0];
-
-/** contoh transaksi supaya pencarian demo tetap bisa dicoba tanpa data asli */
-function demoTx(key: string): Tx {
-  let h = 0;
-  for (const c of key) h = (h * 31 + c.charCodeAt(0)) % 1e9;
-  const s = SERVICES[h % SERVICES.length];
-  const item: ProductItem = s.items
-    ? s.items[h % s.items.length]
-    : [`Tagihan ${s.name}`, ((h % 40) + 8) * 5000];
-  const isRef = key.startsWith("REF");
-
-  return {
-    ref: isRef
-      ? key.includes("-")
-        ? key
-        : key.replace("REF", "REF-")
-      : "REF-LDX" + String(h).padStart(8, "0").slice(-8),
-    svc: s.name,
-    svcId: s.id,
-    prod: item[0],
-    no: isRef ? "0812****" + String(h).slice(-4) : key,
-    method: ["QRIS", "DANA", "OVO", "GoPay"][h % 4],
-    admin: 0,
-    total: item[1],
-    disc: 0,
-    voucher: null,
-    time: new Date(Date.now() - (h % 720) * 60000).toISOString(),
-    status: "Sukses",
-    sn: /PLN/.test(s.name)
-      ? String(h)
-          .padStart(20, "7")
-          .slice(0, 20)
-          .replace(/(\d{4})(?=\d)/g, "$1-")
-      : "SN" + String(h).padStart(10, "0"),
-  };
+function serviceOf(services: Service[], name: string) {
+  return services.find((service) => service.name === name) ?? null;
 }
 
-function TxCard({ tx, onPick }: { tx: Tx; onPick: (ref: string) => void }) {
-  const s = svcOf(tx.svc);
+function TxCard({
+  order,
+  services,
+  onPick,
+}: {
+  order: OrderLookup;
+  services: Service[];
+  onPick: (ref: string) => void;
+}) {
+  const service = serviceOf(services, order.layanan);
+  const status = PUBLIC_STATUS[order.status];
+
   return (
     <button
       type="button"
-      onClick={() => onPick(tx.ref)}
+      onClick={() => onPick(order.ref)}
       className="card w-full p-4 flex items-center gap-4 text-left hover:border-[#c3c9f3] transition"
     >
-      <span className={`t-${s.tone} rounded-xl p-2.5 w-11 h-11 shrink-0`}>
-        <Icon name={s.id as IconName} />
+      <span className={`t-${service?.tone ?? "blue"} rounded-xl p-2.5 w-11 h-11 shrink-0`}>
+        <Icon name={service?.icon ?? "search"} />
       </span>
       <div className="flex-1 min-w-0">
-        <div className="font-bold truncate">{tx.prod}</div>
+        <div className="font-bold truncate">{order.produk ?? order.layanan}</div>
         <div className="text-xs text-[#6b7394] truncate">
-          {tx.no} · {fmtDate(tx.time)}
+          {order.nomor_tujuan} · {fmtDate(order.created_at)}
         </div>
       </div>
       <div className="text-right shrink-0">
-        <div className="font-extrabold text-sm">{rp(tx.total)}</div>
-        <span className={`badge ${tx.status === "Sukses" ? "b-ok" : "b-wait"} mt-1`}>
-          {tx.status === "Sukses" ? "Sukses" : "Sedang dicek"}
-        </span>
+        <div className="font-extrabold text-sm">
+          {order.total !== null ? rp(order.total) : "Belum ditetapkan"}
+        </div>
+        <span className={`${status.badgeClass} mt-1`}>{status.label}</span>
       </div>
     </button>
   );
 }
 
-const STEPS = [
-  "Pesanan dibuat",
-  "Pembayaran dikonfirmasi pelanggan",
-  "Verifikasi pembayaran",
-  "Transaksi sukses",
-];
+type TimelineStep = {
+  label: string;
+  detail?: string;
+  state: "done" | "current" | "pending";
+};
 
-function TxDetail({ tx }: { tx: Tx }) {
-  const done = tx.status === "Sukses" ? 4 : 2;
-  const rows: [string, string][] = [
-    ["Layanan", tx.svc],
-    ["Produk", tx.prod],
-    ["Nomor tujuan", tx.no],
-    ["Metode", tx.method],
-    [/PLN/.test(tx.svc) ? "Token" : "Serial number", tx.sn],
-    ["Total", rp(tx.total)],
+function timeline(order: OrderLookup): TimelineStep[] {
+  const created = fmtDate(order.created_at);
+  const paid = order.paid_at ? fmtDate(order.paid_at) : null;
+  const done = order.completed_at ? fmtDate(order.completed_at) : null;
+
+  if (order.status === "menunggu_cek") {
+    return [
+      { label: "Pesanan dibuat", detail: created, state: "done" },
+      {
+        label: "Menunggu pengecekan admin",
+        detail: "Admin akan mengecek tagihan.",
+        state: "current",
+      },
+      { label: "Pembayaran", detail: "Menunggu", state: "pending" },
+      { label: "Selesai", detail: "Menunggu", state: "pending" },
+    ];
+  }
+
+  if (order.status === "menunggu_bayar") {
+    return [
+      { label: "Pesanan dibuat", detail: created, state: "done" },
+      {
+        label: "Menunggu pembayaran",
+        detail: order.expires_at ? `Batas ${fmtDate(order.expires_at)}` : "Menunggu",
+        state: "current",
+      },
+      { label: "Pembayaran dicek admin", detail: "Menunggu", state: "pending" },
+      { label: "Selesai", detail: "Menunggu", state: "pending" },
+    ];
+  }
+
+  if (order.status === "sudah_bayar") {
+    return [
+      { label: "Pesanan dibuat", detail: created, state: "done" },
+      { label: "Pembayaran dikonfirmasi", detail: paid ?? "Sudah dibayar", state: "done" },
+      {
+        label: "Pembayaran dicek admin",
+        detail: "Admin sedang memproses.",
+        state: "current",
+      },
+      { label: "Selesai", detail: "Menunggu", state: "pending" },
+    ];
+  }
+
+  if (order.status === "sukses") {
+    return [
+      { label: "Pesanan dibuat", detail: created, state: "done" },
+      { label: "Pembayaran dikonfirmasi", detail: paid ?? "Sudah dibayar", state: "done" },
+      { label: "Pembayaran dicek admin", detail: paid ?? "Selesai", state: "done" },
+      { label: "Transaksi selesai", detail: done ?? "Selesai", state: "done" },
+    ];
+  }
+
+  return [
+    { label: "Pesanan dibuat", detail: created, state: "done" },
+    {
+      label: "Transaksi dibatalkan",
+      detail: "Transaksi ini tidak diproses.",
+      state: "current",
+    },
+    { label: "Pembayaran", detail: "Tidak dilanjutkan", state: "pending" },
+    { label: "Selesai", detail: "Tidak dilanjutkan", state: "pending" },
   ];
+}
+
+function TxDetail({ order }: { order: OrderLookup }) {
+  const status = PUBLIC_STATUS[order.status];
+  const steps = timeline(order);
+  const snLabel = /pln/i.test(order.layanan) ? "Token" : "SN / Token";
 
   return (
     <div className="card overflow-hidden">
       <div className="p-6 flex flex-wrap justify-between gap-3 items-start border-b border-[#eceefa]">
         <div>
           <div className="text-xs text-[#6b7394]">Kode referensi</div>
-          <div className="font-mono font-extrabold text-lg">{tx.ref}</div>
+          <div className="font-mono font-extrabold text-lg">{order.ref}</div>
         </div>
-        <span className={`badge ${tx.status === "Sukses" ? "b-ok" : "b-wait"}`}>
-          ● {tx.status === "Sukses" ? "Sukses" : "Sedang dicek"}
-        </span>
+        <span className={status.badgeClass}>● {status.label}</span>
       </div>
 
       <div className="p-6 grid md:grid-cols-2 gap-8">
         <div className="space-y-3 text-sm">
-          {rows.map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-3">
-              <span className="text-[#6b7394]">{k}</span>
-              <b className="text-right break-all">{v}</b>
+          <div className="flex justify-between gap-3">
+            <span className="text-[#6b7394]">Layanan</span>
+            <b className="text-right break-all">{order.layanan}</b>
+          </div>
+          <div className="flex justify-between gap-3">
+            <span className="text-[#6b7394]">Produk</span>
+            <b className="text-right break-all">{order.produk ?? order.layanan}</b>
+          </div>
+          <div className="flex justify-between gap-3">
+            <span className="text-[#6b7394]">Nomor tujuan</span>
+            <b className="text-right break-all">{order.nomor_tujuan}</b>
+          </div>
+          <div className="flex justify-between gap-3">
+            <span className="text-[#6b7394]">Total</span>
+            <b className="text-right">
+              {order.total !== null ? rp(order.total) : "Belum ditetapkan"}
+            </b>
+          </div>
+          <div className="flex justify-between gap-3 items-start">
+            <span className="text-[#6b7394]">{snLabel}</span>
+            <span className="text-right break-all inline-flex items-center justify-end gap-2 flex-wrap">
+              <b className="font-mono">{order.sn ?? "-"}</b>
+              {order.sn ? (
+                <CopyButton
+                  value={order.sn}
+                  className="rounded-md bg-white px-2 py-1 text-[11px] font-bold text-[#3b4fd8] border border-[#e7e9f5] hover:bg-[#eef0ff] active:scale-95 transition"
+                />
+              ) : null}
+            </span>
+          </div>
+          <div className="flex justify-between gap-3">
+            <span className="text-[#6b7394]">Dibuat</span>
+            <b className="text-right">{fmtDate(order.created_at)}</b>
+          </div>
+          {order.paid_at ? (
+            <div className="flex justify-between gap-3">
+              <span className="text-[#6b7394]">Dibayar</span>
+              <b className="text-right">{fmtDate(order.paid_at)}</b>
             </div>
-          ))}
+          ) : null}
+          {order.completed_at ? (
+            <div className="flex justify-between gap-3">
+              <span className="text-[#6b7394]">Selesai</span>
+              <b className="text-right">{fmtDate(order.completed_at)}</b>
+            </div>
+          ) : null}
         </div>
 
         <ol className="relative border-l-2 border-[#dfe2f5] ml-2 space-y-5">
-          {STEPS.map((s, i) => (
-            <li key={s} className="pl-5 relative">
+          {steps.map((step) => (
+            <li key={step.label} className="pl-5 relative">
               <span
                 className={`absolute -left-[9px] top-0.5 w-4 h-4 rounded-full ${
-                  i < done
+                  step.state === "done"
                     ? "bg-[#3b4fd8] ring-4 ring-[#e8ebff]"
-                    : i === done
+                    : step.state === "current"
                       ? "bg-[#f5a623] ring-4 ring-[#fff3dc] animate-pulse"
                       : "bg-[#dfe2f5]"
                 }`}
               />
-              <div className={`font-semibold text-sm ${i > done ? "text-[#9aa1c2]" : ""}`}>{s}</div>
-              <div className="text-xs text-[#6b7394]">
-                {i < done
-                  ? fmtDate(new Date(tx.time).getTime() + i * 15000)
-                  : i === done
-                    ? "Sedang berlangsung…"
-                    : "Menunggu"}
+              <div
+                className={`font-semibold text-sm ${
+                  step.state === "pending" ? "text-[#9aa1c2]" : ""
+                }`}
+              >
+                {step.label}
               </div>
+              <div className="text-xs text-[#6b7394]">{step.detail ?? "Menunggu"}</div>
             </li>
           ))}
         </ol>
@@ -140,44 +217,120 @@ function TxDetail({ tx }: { tx: Tx }) {
   );
 }
 
-export function CekTransaksi({ initialQ = "" }: { initialQ?: string }) {
+export function CekTransaksi({
+  initialQ = "",
+  brandName = "PPOB",
+  waCs = null,
+  brandSlug,
+  services = [],
+}: {
+  initialQ?: string;
+  brandName?: string;
+  waCs?: string | null;
+  brandSlug: string;
+  services?: Service[];
+}) {
   const [q, setQ] = useState(initialQ);
-  const [hits, setHits] = useState<Tx[]>([]);
+  const [hits, setHits] = useState<OrderLookup[]>([]);
   const [searched, setSearched] = useState(false);
-  const [history, setHistory] = useState<Tx[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<OrderLookup[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setHistory(readTx());
-    if (initialQ) run(initialQ);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const run = (raw: string) => {
-    const value = (raw ?? "").trim();
+  const run = async (raw: string) => {
+    const value = raw.trim();
     setQ(value);
+    setError(null);
     if (!value) {
       setHits([]);
       setSearched(false);
       return;
     }
-    const k = value.replace(/\s/g, "").toUpperCase();
-    let found = readTx().filter(
-      (t) => t.ref.toUpperCase() === k || t.no.replace(/\s/g, "") === k,
-    );
-    if (
-      !found.length &&
-      (/^REF-?LDX\d{6,}$/.test(k) || /^(\+?62|0)8\d{7,12}$/.test(k) || /^\d{8,16}$/.test(k))
-    ) {
-      found = [demoTx(k)];
+
+    setLoading(true);
+    setSearched(false);
+    try {
+      const cleaned = value.replace(/[\s-]/g, "");
+      const looksLikeRef = /[a-z]/i.test(value);
+      let results = await checkOrder({
+        brandSlug,
+        ...(looksLikeRef ? { ref: value } : { nomorTujuan: cleaned }),
+      });
+
+      if (results.length === 0) {
+        const second = await checkOrder({
+          brandSlug,
+          ...(looksLikeRef ? { nomorTujuan: cleaned } : { ref: value }),
+        });
+        const seen = new Set(results.map((item) => item.ref));
+        results = [...results, ...second.filter((item) => !seen.has(item.ref))];
+      }
+
+      setHits(results);
+      setSearched(true);
+    } catch (err) {
+      setHits([]);
+      setError(toPublicError(err).message);
+      setSearched(true);
+    } finally {
+      setLoading(false);
     }
-    setHits(found);
-    setSearched(true);
   };
 
+  useEffect(() => {
+    if (initialQ) void run(initialQ);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQ, brandSlug]);
+
+  useEffect(() => {
+    const refs = readRefs();
+    if (refs.length === 0) {
+      setHistory([]);
+      setHistoryLoading(false);
+      return;
+    }
+
+    let active = true;
+    setHistoryLoading(true);
+    setHistoryError(null);
+    Promise.all(
+      refs.map((ref) =>
+        checkOrder({ brandSlug, ref })
+          .then((items) => items.find((item) => item.ref === ref) ?? null)
+          .catch(() => null),
+      ),
+    )
+      .then((items) => {
+        if (!active) return;
+        const found = items.filter((item): item is OrderLookup => item !== null);
+        setHistory(found);
+        if (found.length === 0) {
+          setHistoryError("Riwayat di perangkat ini belum bisa dimuat.");
+        }
+      })
+      .catch(() => {
+        if (active) setHistoryError("Riwayat di perangkat ini belum bisa dimuat.");
+      })
+      .finally(() => {
+        if (active) setHistoryLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [brandSlug]);
+
   const pick = (ref: string) => {
-    run(ref);
+    void run(ref);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const csUrl = waLink(
+    waCs,
+    `Halo CS ${brandName}, saya butuh bantuan terkait transaksi.`,
+  );
 
   return (
     <>
@@ -198,7 +351,7 @@ export function CekTransaksi({ initialQ = "" }: { initialQ?: string }) {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              run(q);
+              void run(q);
             }}
             className="mt-7 card p-2 flex flex-col sm:flex-row gap-2 shadow-[0_20px_50px_-25px_rgba(30,40,110,.4)]"
           >
@@ -207,34 +360,73 @@ export function CekTransaksi({ initialQ = "" }: { initialQ?: string }) {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               className="flex-1 px-4 py-3 outline-none min-w-0"
-              placeholder="REF-LDX12345678 atau 0812…"
+              placeholder="Kode referensi atau nomor tujuan"
               aria-label="Kode referensi atau nomor tujuan"
             />
-            <button className="btn">Cek Status</button>
+            <button className="btn" disabled={loading}>
+              {loading ? "Mencari…" : "Cek Status"}
+            </button>
           </form>
         </div>
       </section>
 
       <main className="max-w-3xl mx-auto px-5 py-10 min-h-[40vh]">
         <div>
-          {searched && hits.length === 0 && (
+          {loading && (
+            <div className="card p-8 text-center text-[#6b7394]">
+              Mencari transaksi…
+            </div>
+          )}
+
+          {!loading && error && (
+            <div className="card p-8 text-center">
+              <div className="font-bold">Layanan lagi gangguan</div>
+              <p className="text-sm text-[#6b7394] mt-1">{error}</p>
+              <button
+                type="button"
+                onClick={() => void run(q)}
+                className="btn btn-ghost mt-4"
+              >
+                Coba lagi
+              </button>
+            </div>
+          )}
+
+          {!loading && !error && searched && hits.length === 0 && (
             <div className="card p-8 text-center">
               <div className="text-4xl">🔍</div>
               <div className="font-bold mt-2">Transaksi tidak ditemukan</div>
               <p className="text-sm text-[#6b7394] mt-1">
-                Periksa lagi kode referensi atau nomor tujuan. Butuh bantuan? Hubungi CS 24 jam.
+                Periksa lagi kode referensi atau nomor tujuan.
               </p>
+              {csUrl ? (
+                <a
+                  href={csUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="btn btn-ghost mt-4"
+                >
+                  Hubungi CS
+                </a>
+              ) : null}
             </div>
           )}
 
-          {searched && hits.length === 1 && <TxDetail tx={hits[0]} />}
+          {!loading && !error && searched && hits.length === 1 && (
+            <TxDetail order={hits[0]} />
+          )}
 
-          {searched && hits.length > 1 && (
+          {!loading && !error && searched && hits.length > 1 && (
             <div>
               <div className="font-bold mb-3">{hits.length} transaksi ditemukan</div>
               <div className="space-y-3">
-                {hits.map((t) => (
-                  <TxCard key={t.ref} tx={t} onPick={pick} />
+                {hits.map((order) => (
+                  <TxCard
+                    key={order.ref}
+                    order={order}
+                    services={services}
+                    onPick={pick}
+                  />
                 ))}
               </div>
             </div>
@@ -249,8 +441,23 @@ export function CekTransaksi({ initialQ = "" }: { initialQ?: string }) {
             </Link>
           </div>
           <div className="mt-4 space-y-3">
-            {history.length ? (
-              history.map((t) => <TxCard key={t.ref} tx={t} onPick={pick} />)
+            {historyLoading ? (
+              <div className="card p-8 text-center text-[#6b7394]">
+                Memuat riwayat…
+              </div>
+            ) : history.length > 0 ? (
+              history.map((order) => (
+                <TxCard
+                  key={order.ref}
+                  order={order}
+                  services={services}
+                  onPick={pick}
+                />
+              ))
+            ) : historyError ? (
+              <div className="card p-8 text-center text-[#6b7394]">
+                {historyError}
+              </div>
             ) : (
               <div className="card p-8 text-center text-[#6b7394]">
                 Belum ada transaksi di perangkat ini.

@@ -6,7 +6,7 @@ Status: keputusan final Tahap 1. Dokumen ini wajib dibaca sebelum mengerjakan ta
 
 - Ada 22 website PPOB Next.js (sebagian punya kategori top up game). Setiap website punya repo, desain, dan pemilik sendiri.
 - Dashboard admin ada di dalam repo web masing-masing, di route `/admin` (contoh: `ludovexdigital.com/admin`).
-- `ludovex-digital` adalah **repo master**. Kode dashboard dibangun di sini sebagai satu modul mandiri di folder `admin/` (bukan di `components/` atau `lib/` milik web). File di `app/admin` hanya pintu masuk tipis yang mengimpor modul tersebut.
+- `ludovex-digital` adalah **repo master**. Kode dashboard dibangun di sini sebagai satu modul mandiri di `modules/admin/` (bukan di `components/` atau `lib/` milik web). Route di `app/admin/` hanya pintu masuk dan penjaga server yang mengimpor modul tersebut.
 - Modul dashboard yang sama disalin ke repo brand lain **tanpa perubahan kode**. Brand aktif dibaca dari env `BRAND_SLUG` dan dicocokkan dengan `brands.slug`.
 - Semua brand memakai **satu project Supabase**. Data dipisah dengan `brand_id`.
 - File migration Supabase hanya ada di repo master (`supabase/migrations/`). Repo brand tidak boleh membuat migration sendiri.
@@ -17,6 +17,14 @@ Status: keputusan final Tahap 1. Dokumen ini wajib dibaca sebelum mengerjakan ta
 - Layanan tagihan (PDAM, BPJS, Internet & TV, Multifinance, dan tagihan sejenis) dicek manual oleh admin dan **tidak dibatalkan otomatis**. Di Ludovex, layanan `pln` saat ini adalah Token PLN (nominal); tagihan PLN untuk brand lain ditambahkan saat brand tersebut dikerjakan.
 - Service role key Supabase tidak boleh dipakai di sisi browser.
 - Acuan desain dashboard: `docs/mockup.html`.
+
+### Struktur modul dashboard
+
+- `app/admin/` hanya berisi route, guard server, dan halaman. `modules/admin/` berisi komponen, query/data, server action, style, tipe, dan ikon.
+- Modul admin tidak memakai komponen, style, font, atau helper dari kode web. Style memakai prefix `adm-`, di-scope di `.admin-root`, dan header/footer web disembunyikan lewat CSS hanya saat halaman admin aktif.
+- Nama, logo, warna, dan data brand selalu berasal dari env `BRAND_SLUG` + database. Tidak ada nama brand yang ditulis di kode.
+- Semua akses database dikumpulkan di `modules/admin/data/`. Perubahan status order tetap wajib lewat RPC.
+- Cara menyalin modul ke repo brand lain ada di `modules/admin/README.md`.
 
 ## 2. Alur status order
 
@@ -151,7 +159,7 @@ Pembatalan otomatis: `pg_cron` memanggil `cancel_expired_orders()` tiap menit (j
 
 1. Apply migration berurutan (Supabase CLI `supabase db push`, atau SQL Editor):
    `brands` -> `katalog` -> `vouchers` -> `orders` -> `functions` -> `rls` -> `storage` -> `seed`.
-2. Salin `.env.example` menjadi `.env.local`, isi URL project, anon key, dan `BRAND_SLUG`.
+2. Salin `.env.example` menjadi `.env.local`, isi URL project, anon key, `BRAND_SLUG`, dan `NEXT_PUBLIC_SITE_URL` (URL publik web, dipakai metadata, sitemap, dan redirect reset password).
 3. Buat user admin di Supabase Auth, lalu tautkan ke tabel `admins`:
 
 ```sql
@@ -168,7 +176,7 @@ insert into public.admins (user_id, brand_id, nama, role)
 values ('UUID-AUTH-USER', null, 'Developer', 'super_admin');
 ```
 
-4. Matikan public signup di Supabase Auth.
+4. Matikan public signup di Supabase Auth. Tambahkan URL `${domain}/admin/reset-password` ke Redirect URLs agar email reset password bisa dibuka.
 5. Aktifkan `pg_cron` (opsional tetapi disarankan) agar pembatalan otomatis berjalan tiap menit.
 6. Ganti `products.harga_modal` dengan modal asli.
 7. Upload logo dan QRIS ke bucket, lalu isi `brands.logo_url` dan `brands.qris_image_url`.
@@ -195,3 +203,49 @@ values ('UUID-AUTH-USER', null, 'Developer', 'super_admin');
 - `layanan_terlaris`: 3 layanan dengan jumlah order `sukses` terbanyak.
 - `menunggu_cek` dan `sudah_bayar`: jumlah order aktif saat ini.
 - Batas bulan memakai zona waktu `Asia/Jakarta`.
+
+## 11. Cara web nyambung ke database
+
+Semua akses Supabase untuk website ada di folder `lib/db/`:
+
+| File | Isi |
+|---|---|
+| `lib/db/server.ts` | Baca publik dari server: brand, layanan + produk, metode bayar, `get_payment` by ref, dan `cek_order` by ref. Data publik memakai fetch cache 60 detik. |
+| `lib/db/client.ts` | RPC publik dari browser: `create_order`, `create_bill_check`, `get_payment`, `cek_voucher`, `cek_order`. Memakai anon key, bukan service role. |
+| `lib/db/mappers.ts` | Menyamakan bentuk data Supabase dengan bentuk komponen web. |
+| `lib/db/errors.ts` | Mengubah error database menjadi pesan yang aman untuk pembeli. |
+| `lib/db/status.ts` | Label dan badge status untuk sisi pembeli. |
+| `lib/db/popular.ts` | Menyusun daftar populer dari nominal termurah layanan aktif. |
+| `lib/db/types.ts` | Tipe data web. |
+
+Sumber data:
+
+- **Brand publik** dibaca dari kolom aman tabel `brands` yang sudah diberi akses `anon` di Tahap 1 (`id`, `nama`, `slug`, `domain`, `tagline`, `logo_url`, `warna_utama`, `wa_cs`, `qris_image_url`, `batas_bayar_menit`, `jam_cek_tagihan`). Tahap 1 tidak membuat view terpisah bernama `brands_public`; web memakai jalur kolom aman ini supaya tidak menambah objek database baru.
+- **Layanan dan produk** dibaca dari `services` + `products` yang `aktif = true` saja.
+- **Metode bayar** dibaca dari `payment_methods` yang `aktif = true` saja.
+- **Voucher** tidak pernah dibaca langsung oleh anon. Preview potongan memakai `cek_voucher`, dan potongan final dihitung `create_order` / `set_bill_amount`.
+- **Order** tidak pernah dibaca langsung oleh anon. Halaman bayar memakai `get_payment`, halaman cek memakai `cek_order`, dan pembuatan order memakai `create_order` / `create_bill_check`.
+
+Pemakaian per halaman:
+
+| Halaman / komponen | Sumber data |
+|---|---|
+| Root layout, metadata SEO, Header, Footer | `getPublicBrand` |
+| Homepage | `getPublicServices` + `buildPopular`, dikirim ke `ServiceGrid` dan `QuickPayForm` |
+| `/[layanan]` | `getPublicServices` + `getPublicPaymentMethods` + `getPublicBrand` ke `TransactionFlow` |
+| Form checkout nominal | `cek_voucher`, `create_order`, lalu `get_payment` untuk data pembayaran final |
+| Form checkout tagihan | `create_bill_check`, lalu `get_payment` untuk status `menunggu_cek` |
+| `/bayar?ref=...` | `get_payment`; kalau sukses, `cek_order` untuk mengambil SN/token |
+| `/cek` | `CekTransaksi` memanggil `cek_order` lewat `checkOrder` |
+| Bantuan, Tentang, Kebijakan Privasi, Syarat & Ketentuan | `getPublicBrand` untuk nama brand dan WhatsApp CS |
+| Sitemap | `getPublicServices` |
+
+Aturan implementasi web:
+
+- Perubahan dari dashboard tampil paling lama 60 detik karena data publik memakai fetch cache dan revalidate 60 detik.
+- Kalau database gagal, halaman menampilkan pesan “Layanan lagi gangguan, coba lagi sebentar.”, bukan blank atau error mentah.
+- Browser hanya boleh memakai anon key. Service role key tidak boleh masuk web.
+- Total, potongan voucher, biaya admin, dan `expires_at` yang dipakai untuk transaksi berasal dari RPC database. Hitungan di browser hanya preview.
+- `localStorage` di `lib/tx.ts` hanya menyimpan daftar kode referensi terakhir (`ldx_refs`). Status selalu diambil dari `cek_order`.
+- Jangan menambah function database baru untuk web; semua kebutuhan sudah dicakup lima RPC publik di atas.
+- Saat menyalin web ke 21 repo brand lain, salin `lib/db/`, sesuaikan env brand, dan pakai RPC yang sama.

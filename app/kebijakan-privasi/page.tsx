@@ -1,13 +1,21 @@
 import type { Metadata } from "next";
-import { CS_PHONE_DISPLAY, CS_WA } from "@/lib/config";
+import { getPublicBrand } from "@/lib/db/server";
+import { waDisplay } from "@/lib/format";
 
-export const metadata: Metadata = {
-  title: "Kebijakan Privasi",
-  description:
-    "Bagaimana Ludovex Digital mengumpulkan, menggunakan, dan melindungi data Anda.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = (await getPublicBrand()).data;
+  return {
+    title: "Kebijakan Privasi",
+    description: `Bagaimana ${brand?.nama ?? "kami"} mengumpulkan, menggunakan, dan melindungi data Anda.`,
+  };
+}
 
-export default function KebijakanPrivasiPage() {
+export default async function KebijakanPrivasiPage() {
+  const brand = (await getPublicBrand()).data;
+  const brandName = brand?.nama ?? "PPOB";
+  const wa = brand?.wa_cs ?? null;
+  const waNumber = waDisplay(wa);
+
   return (
     <>
       <section className="hero-bg">
@@ -40,9 +48,10 @@ export default function KebijakanPrivasiPage() {
 
           <h2>3. Penyimpanan di perangkat</h2>
           <p>
-            Riwayat transaksi dan kode voucher dapat disimpan di browser perangkat Anda (local
-            storage) agar Anda bisa mengecek status dengan mudah. Data ini dapat Anda hapus kapan
-            saja dengan membersihkan data browser.
+            Daftar kode referensi transaksi terakhir dapat disimpan di browser perangkat Anda
+            (local storage) agar mudah mengecek status. Status transaksi selalu diambil dari
+            database, bukan dari perangkat. Data ini dapat Anda hapus kapan saja dengan
+            membersihkan data browser.
           </p>
 
           <h2>4. Berbagi data</h2>
@@ -70,15 +79,19 @@ export default function KebijakanPrivasiPage() {
 
           <h2>8. Kontak</h2>
           <p>
-            Pertanyaan seputar privasi: WhatsApp{" "}
-            <a
-              href={`https://wa.me/${CS_WA}`}
-              target="_blank"
-              rel="noopener"
-              className="font-bold text-[#3b4fd8]"
-            >
-              {CS_PHONE_DISPLAY}
-            </a>
+            Pertanyaan seputar privasi di {brandName}: WhatsApp{" "}
+            {wa ? (
+              <a
+                href={`https://wa.me/${wa.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener"
+                className="font-bold text-[#3b4fd8]"
+              >
+                {waNumber}
+              </a>
+            ) : (
+              "-"
+            )}
           </p>
         </div>
       </main>

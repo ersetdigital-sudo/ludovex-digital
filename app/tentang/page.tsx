@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon, type IconName } from "@/components/icon";
-import { CS_WA, CS_PHONE_DISPLAY } from "@/lib/config";
+import { getPublicBrand } from "@/lib/db/server";
+import { waDisplay } from "@/lib/format";
 
-export const metadata: Metadata = {
-  title: "Tentang Kami",
-  description:
-    "Ludovex Digital adalah layanan PPOB untuk pulsa, paket data, token listrik, top up e-wallet, dan tagihan bulanan.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = (await getPublicBrand()).data;
+  return {
+    title: "Tentang Kami",
+    description: brand
+      ? `${brand.nama} adalah layanan PPOB untuk pulsa, paket data, token listrik, top up e-wallet, dan tagihan bulanan.`
+      : "Layanan PPOB untuk pulsa, paket data, token listrik, top up e-wallet, dan tagihan bulanan.",
+  };
+}
 
 const VALUES: { icon: IconName; tone: string; title: string; desc: string }[] = [
   { icon: "clock", tone: "blue", title: "Cepat", desc: "Proses transaksi praktis dari HP kapan saja." },
@@ -15,7 +20,12 @@ const VALUES: { icon: IconName; tone: string; title: string; desc: string }[] = 
   { icon: "chat", tone: "purple", title: "Dibantu CS", desc: "Tim kami siap membantu lewat WhatsApp." },
 ];
 
-export default function TentangPage() {
+export default async function TentangPage() {
+  const brand = (await getPublicBrand()).data;
+  const brandName = brand?.nama ?? "PPOB";
+  const wa = brand?.wa_cs ?? null;
+  const waNumber = waDisplay(wa);
+
   return (
     <>
       <section className="hero-bg">
@@ -30,7 +40,7 @@ export default function TentangPage() {
       <main className="max-w-3xl mx-auto px-5 py-12">
         <div className="card p-7 md:p-10 prose">
           <p className="!text-lg !text-[#16204a] font-medium">
-            Ludovex Digital adalah layanan PPOB (Payment Point Online Bank) yang membantu Anda
+            {brandName} adalah layanan PPOB (Payment Point Online Bank) yang membantu Anda
             membeli pulsa, paket data, token listrik, top up e-wallet, dan membayar berbagai
             tagihan bulanan dengan cepat dan mudah.
           </p>
@@ -63,14 +73,18 @@ export default function TentangPage() {
           <h2>Hubungi kami</h2>
           <p>
             WhatsApp CS:{" "}
-            <a
-              href={`https://wa.me/${CS_WA}`}
-              target="_blank"
-              rel="noopener"
-              className="font-bold text-[#3b4fd8]"
-            >
-              {CS_PHONE_DISPLAY}
-            </a>
+            {wa ? (
+              <a
+                href={`https://wa.me/${wa.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener"
+                className="font-bold text-[#3b4fd8]"
+              >
+                {waNumber}
+              </a>
+            ) : (
+              "-"
+            )}
           </p>
         </div>
 

@@ -1,6 +1,16 @@
-/** Logo Ludovex. dark=true dipakai di footer (latar gelap). */
-export function Logo({ dark = false }: { dark?: boolean }) {
+/** Logo web. Nama brand tetap dari database; bentuk logo adalah desain statis. */
+export function Logo({
+  dark = false,
+  name = "PPOB",
+}: {
+  dark?: boolean;
+  name?: string;
+}) {
   const grad = dark ? "logo-grad-dark" : "logo-grad-light";
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const main = (words[0] ?? "PPOB").toUpperCase();
+  const sub = (words.slice(1).join(" ") || "Digital").toUpperCase();
+
   return (
     <span className="inline-flex items-center gap-2.5">
       <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true">
@@ -27,14 +37,14 @@ export function Logo({ dark = false }: { dark?: boolean }) {
             dark ? "text-white" : "text-[#16204a]"
           }`}
         >
-          LUDOVEX
+          {main}
         </span>
         <span
           className={`block text-[9.5px] font-bold tracking-[.38em] mt-0.5 ${
             dark ? "text-[#a9b3ff]" : "text-[#3b4fd8]"
           }`}
         >
-          DIGITAL
+          {sub}
         </span>
       </span>
     </span>

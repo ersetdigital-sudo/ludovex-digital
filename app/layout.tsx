@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { CS_PHONE_DISPLAY, CS_WA, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/config";
+import { getPublicBrand } from "@/lib/db/server";
+import { SITE_URL } from "@/lib/config";
+import { digits } from "@/lib/format";
 import "./globals.css";
 
 const jakarta = localFont({
@@ -18,65 +20,86 @@ const jakarta = localFont({
   display: "swap",
 });
 
-const DESCRIPTION =
-  "Isi pulsa, beli token listrik, bayar tagihan, dan top up e-wallet dalam hitungan detik. Tanpa daftar, struk langsung terbit.";
+export const revalidate = 60;
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    template: `%s — ${SITE_NAME}`,
-  },
-  description: DESCRIPTION,
-  applicationName: SITE_NAME,
-  keywords: [
-    "PPOB",
-    "pulsa",
-    "paket data",
-    "token PLN",
-    "top up e-wallet",
-    "bayar tagihan",
-    "QRIS",
-    "PDAM",
-    "BPJS",
-  ],
-  openGraph: {
-    type: "website",
-    locale: "id_ID",
+const FALLBACK_NAME = "PPOB";
+const FALLBACK_TAGLINE = "Layanan pembayaran digital";
+
+/** Isi metadata utama dari brand di database; fallback netral kalau DB bermasalah. */
+export async function generateMetadata(): Promise<Metadata> {
+  const brandResult = await getPublicBrand();
+  const brand = brandResult.data;
+  const name = brand?.nama || FALLBACK_NAME;
+  const tagline = brand?.tagline || FALLBACK_TAGLINE;
+  const description = `${tagline}. Isi pulsa, beli token listrik, bayar tagihan, dan top up e-wallet dalam hitungan detik. Tanpa daftar, struk langsung terbit.`;
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: `${name} — ${tagline}`,
+      template: `%s — ${name}`,
+    },
+    description,
+    applicationName: name,
+    keywords: [
+      "PPOB",
+      "pulsa",
+      "paket data",
+      "token PLN",
+      "top up e-wallet",
+      "bayar tagihan",
+      "QRIS",
+      "PDAM",
+      "BPJS",
+    ],
+    openGraph: {
+      type: "website",
+      locale: "id_ID",
+      url: SITE_URL,
+      siteName: name,
+      title: `${name} — ${tagline}`,
+      description,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${name} — ${tagline}`,
+      description,
+    },
+  };
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const brandResult = await getPublicBrand();
+  const brand = brandResult.data;
+  const brandName = brand?.nama || FALLBACK_NAME;
+  const waCs = brand?.wa_cs ?? null;
+  const waDigits = digits(waCs ?? "");
+
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: brandName,
     url: SITE_URL,
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: DESCRIPTION,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: DESCRIPTION,
-  },
-};
+    description: `${brand?.tagline || FALLBACK_TAGLINE}. Layanan pembayaran digital.`,
+    areaServed: "ID",
+    ...(waDigits
+      ? {
+          contactPoint: {
+            "@type": "ContactPoint",
+            contactType: "customer service",
+            telephone: `+${waDigits}`,
+            availableLanguage: "Indonesian",
+          },
+        }
+      : {}),
+  };
 
-const orgJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: SITE_NAME,
-  url: SITE_URL,
-  description: DESCRIPTION,
-  areaServed: "ID",
-  contactPoint: {
-    "@type": "ContactPoint",
-    contactType: "customer service",
-    telephone: `+${CS_WA}`,
-    availableLanguage: "Indonesian",
-  },
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
       <body className={`${jakarta.variable} antialiased`}>
-        <Header />
+        <Header brandName={brandName} />
         {children}
-        <Footer />
+        <Footer brandName={brandName} waCs={waCs} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}

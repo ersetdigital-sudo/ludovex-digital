@@ -26,7 +26,7 @@ export const FAQ: FaqGroup[] = [
     [
       [
         "Bagaimana cara cek status transaksi?",
-        "Buka menu Cek Transaksi, lalu masukkan kode referensi (REF-LDX…) atau nomor tujuan.",
+        "Buka menu Cek Transaksi, lalu masukkan kode referensi atau nomor tujuan.",
       ],
       [
         "Berapa lama transaksi diproses?",
@@ -76,7 +76,7 @@ export const FAQ: FaqGroup[] = [
       ],
       [
         "Apakah CS akan meminta PIN atau OTP?",
-        "Tidak pernah. Jangan bagikan PIN, kata sandi, atau kode OTP kepada siapa pun yang mengaku sebagai CS Ludovex Digital.",
+        "Tidak pernah. Jangan bagikan PIN, kata sandi, atau kode OTP kepada siapa pun yang mengaku sebagai CS kami.",
       ],
     ],
   ],

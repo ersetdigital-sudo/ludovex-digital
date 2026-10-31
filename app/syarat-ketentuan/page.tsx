@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
-import { CS_PHONE_DISPLAY, CS_WA } from "@/lib/config";
+import { getPublicBrand } from "@/lib/db/server";
+import { waDisplay } from "@/lib/format";
 
-export const metadata: Metadata = {
-  title: "Syarat & Ketentuan",
-  description: "Ketentuan penggunaan layanan Ludovex Digital.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = (await getPublicBrand()).data;
+  return {
+    title: "Syarat & Ketentuan",
+    description: `Ketentuan penggunaan layanan ${brand?.nama ?? "kami"}.`,
+  };
+}
 
-export default function SyaratKetentuanPage() {
+export default async function SyaratKetentuanPage() {
+  const brand = (await getPublicBrand()).data;
+  const brandName = brand?.nama ?? "PPOB";
+  const wa = brand?.wa_cs ?? null;
+  const waNumber = waDisplay(wa);
+
   return (
     <>
       <section className="hero-bg">
@@ -15,7 +24,7 @@ export default function SyaratKetentuanPage() {
             Syarat &amp; Ketentuan
           </h1>
           <p className="text-[#6b7394] mt-3 text-lg">
-            Ketentuan penggunaan layanan Ludovex Digital.
+            Ketentuan penggunaan layanan {brandName}.
           </p>
         </div>
       </section>
@@ -26,7 +35,7 @@ export default function SyaratKetentuanPage() {
 
           <h2>1. Ketentuan umum</h2>
           <p>
-            Dengan menggunakan layanan Ludovex Digital, Anda dianggap telah membaca dan
+            Dengan menggunakan layanan {brandName}, Anda dianggap telah membaca dan
             menyetujui syarat &amp; ketentuan ini.
           </p>
 
@@ -64,14 +73,18 @@ export default function SyaratKetentuanPage() {
           <h2>7. Bantuan</h2>
           <p>
             Kendala transaksi dapat disampaikan melalui WhatsApp{" "}
-            <a
-              href={`https://wa.me/${CS_WA}`}
-              target="_blank"
-              rel="noopener"
-              className="font-bold text-[#3b4fd8]"
-            >
-              {CS_PHONE_DISPLAY}
-            </a>{" "}
+            {wa ? (
+              <a
+                href={`https://wa.me/${wa.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener"
+                className="font-bold text-[#3b4fd8]"
+              >
+                {waNumber}
+              </a>
+            ) : (
+              "-"
+            )}{" "}
             dengan menyertakan kode referensi.
           </p>
         </div>

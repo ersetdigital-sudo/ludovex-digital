@@ -1,67 +1,52 @@
-export type Tx = {
-  ref: string;
-  /** nama layanan, contoh "Token PLN" */
-  svc: string;
-  /** id service, contoh "pln" — dipakai untuk ikon/warna */
-  svcId: string;
-  prod: string;
-  no: string;
-  method: string;
-  admin: number;
-  total: number;
-  disc: number;
-  voucher: string | null;
-  time: string;
-  status: "Menunggu" | "Diproses" | "Sukses";
-  sn: string;
-};
+const KEY = "ldx_refs";
+const MAX = 10;
 
-const KEY = "ldx_tx";
-const MAX = 30;
+function normalize(ref: string): string {
+  return ref.trim();
+}
 
-/** Aman dipanggil di client saja. */
-export function readTx(): Tx[] {
+/** Hanya daftar kode referensi terakhir; status selalu diambil dari database. */
+export function readRefs(): string[] {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? "[]") as Tx[];
+    const parsed = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((value): value is string => typeof value === "string")
+      .map(normalize)
+      .filter(Boolean)
+      .slice(0, MAX);
   } catch {
     return [];
   }
 }
 
-export function saveTx(tx: Tx) {
+export function saveRef(ref: string) {
   if (typeof window === "undefined") return;
-  const list = readTx();
-  list.unshift(tx);
+  const value = normalize(ref);
+  if (!value) return;
   try {
-    localStorage.setItem(KEY, JSON.stringify(list.slice(0, MAX)));
+    const next = [value, ...readRefs().filter((item) => item !== value)].slice(0, MAX);
+    localStorage.setItem(KEY, JSON.stringify(next));
   } catch {
     /* storage penuh / private mode */
   }
 }
 
-export function setStored(key: "ldx_svc" | "ldx_no" | "ldx_q" | "ldx_voucher", value: string) {
+export function removeRef(ref: string) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(key, value);
+    const next = readRefs().filter((item) => item !== ref);
+    localStorage.setItem(KEY, JSON.stringify(next));
   } catch {
     /* ignore */
   }
 }
 
-export function getStored(key: "ldx_svc" | "ldx_no" | "ldx_voucher" | "ldx_q") {
-  if (typeof window === "undefined") return null;
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-export function removeStored(key: "ldx_svc" | "ldx_no" | "ldx_q" | "ldx_voucher") {
+export function clearRefs() {
   if (typeof window === "undefined") return;
   try {
-    localStorage.removeItem(key);
+    localStorage.removeItem(KEY);
   } catch {
     /* ignore */
   }

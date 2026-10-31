@@ -1,9 +1,12 @@
 import type { MetadataRoute } from "next";
-import { SERVICES } from "@/data/services";
 import { SITE_URL } from "@/lib/config";
+import { getPublicServices } from "@/lib/db/server";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const revalidate = 60;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const services = (await getPublicServices()).data ?? [];
 
   const staticPages = [
     { path: "", priority: 1 },
@@ -20,8 +23,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: p.priority,
   }));
 
-  const servicePages = SERVICES.map((s) => ({
-    url: `${SITE_URL}/${s.route}`,
+  const servicePages = services.map((service) => ({
+    url: `${SITE_URL}/${service.route}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
     priority: 0.8,

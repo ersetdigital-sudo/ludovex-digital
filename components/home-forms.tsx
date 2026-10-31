@@ -2,36 +2,34 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { SERVICES, routeOf } from "@/data/services";
-
-/** urutan opsi select hero (sesuai HTML asli) */
-const DROPDOWN_ORDER = ["pulsa", "data", "pln", "wallet", "pdam", "bpjs", "inet", "fin"];
+import type { Service } from "@/data/services";
 
 /** Form cepat di hero: pilih layanan + nomor, langsung ke halaman transaksi. */
-export function QuickPayForm() {
+export function QuickPayForm({ services }: { services: Service[] }) {
   const router = useRouter();
-  const [svc, setSvc] = useState("pulsa");
+  const [svc, setSvc] = useState(services[0]?.id ?? "");
   const [no, setNo] = useState("");
 
-  const options = DROPDOWN_ORDER.map((id) => SERVICES.find((s) => s.id === id)!).filter(
-    Boolean,
-  );
+  if (services.length === 0) return null;
+
+  const selected = services.find((service) => service.id === svc) ?? services[0];
 
   return (
     <form
       className="mt-8 card p-2 flex flex-col sm:flex-row gap-2 max-w-lg shadow-[0_20px_50px_-25px_rgba(30,40,110,.4)]"
       onSubmit={(e) => {
         e.preventDefault();
-        router.push(`/${routeOf(svc)}?no=${encodeURIComponent(no.trim())}`);
+        if (!selected) return;
+        router.push(`/${selected.route}?no=${encodeURIComponent(no.trim())}`);
       }}
     >
       <select
         name="layanan"
-        value={svc}
+        value={selected.id}
         onChange={(e) => setSvc(e.target.value)}
         className="sm:w-40 rounded-xl bg-[#f4f6fd] px-3 py-3 font-semibold text-sm outline-none"
       >
-        {options.map((s) => (
+        {services.map((s) => (
           <option key={s.id} value={s.id}>
             {s.name}
           </option>
@@ -68,7 +66,7 @@ export function QuickCekForm() {
         value={q}
         onChange={(e) => setQ(e.target.value)}
         className="field"
-        placeholder="REF-LDX12345678 atau 0812…"
+        placeholder="Kode referensi atau nomor tujuan"
       />
       <button className="btn shrink-0">Cek Status</button>
     </form>
@@ -80,11 +78,6 @@ export function CopyVoucher({ code = "LUDOBARU" }: { code?: string }) {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
-    try {
-      localStorage.setItem("ldx_voucher", code);
-    } catch {
-      /* ignore */
-    }
     try {
       if (navigator.clipboard) await navigator.clipboard.writeText(code);
       else throw new Error("fallback");

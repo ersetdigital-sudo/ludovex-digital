@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import { QRIS_IMAGE } from "@/lib/config";
+import { useEffect, useState } from "react";
 
 /** QR pattern deterministik — dipakai kalau gambar QRIS belum tersedia. */
 function PlaceholderQr() {
@@ -34,20 +32,31 @@ function PlaceholderQr() {
   );
 }
 
-/** Kotak QRIS + catatan nominal. */
-export function QrisBox({ amount }: { amount: string }) {
+/** Kotak QRIS + catatan nominal. Gambar diambil dari brand di database. */
+export function QrisBox({
+  amount,
+  qrisImageUrl = null,
+  brandName = "PPOB",
+}: {
+  amount: string;
+  qrisImageUrl?: string | null;
+  brandName?: string;
+}) {
   const [failed, setFailed] = useState(false);
-  const ready = !!QRIS_IMAGE && !failed;
+
+  useEffect(() => {
+    setFailed(false);
+  }, [qrisImageUrl]);
+
+  const ready = !!qrisImageUrl && !failed;
+  const filename = `QRIS-${brandName.replace(/[^a-z0-9]+/gi, "-")}.png`;
 
   return (
     <div>
       {ready ? (
-        <Image
-          src={QRIS_IMAGE}
-          alt="QRIS Ludovex"
-          width={600}
-          height={600}
-          priority
+        <img
+          src={qrisImageUrl}
+          alt={`QRIS ${brandName}`}
           onError={() => setFailed(true)}
           className="w-full max-w-[300px] h-auto mx-auto rounded-2xl border border-[#e7e9f5] shadow-sm"
         />
@@ -57,8 +66,8 @@ export function QrisBox({ amount }: { amount: string }) {
 
       {ready && (
         <a
-          href={QRIS_IMAGE}
-          download="QRIS-Ludovex.png"
+          href={qrisImageUrl}
+          download={filename}
           target="_blank"
           rel="noopener"
           className="inline-block mt-3 text-sm font-bold text-[#3b4fd8]"

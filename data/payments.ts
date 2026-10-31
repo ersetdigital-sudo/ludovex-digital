@@ -1,52 +1,10 @@
 export type PayType = "qr" | "ew" | "va";
 
 export type PayMethod = {
+  id: string;
   name: string;
-  /** biaya admin */
   fee: number;
   type: PayType;
-  /** true = disembunyikan dari pilihan user (bisa dinyalakan lagi nanti) */
-  hidden?: boolean;
-};
-
-export const PAY_METHODS: PayMethod[] = [
-  { name: "QRIS", fee: 0, type: "qr" },
-  { name: "DANA", fee: 1000, type: "ew", hidden: true },
-  { name: "OVO", fee: 1000, type: "ew", hidden: true },
-  { name: "GoPay", fee: 1000, type: "ew", hidden: true },
-  { name: "ShopeePay", fee: 1000, type: "ew", hidden: true },
-  { name: "Virtual Account", fee: 2500, type: "va", hidden: true },
-];
-
-/** metode yang tampil di form transaksi (sekarang QRIS saja) */
-export const ACTIVE_PAY_METHODS = PAY_METHODS.filter((m) => !m.hidden);
-
-export type Voucher = {
-  /** potongan persen */
-  pct?: number;
-  /** batas potongan untuk pct */
-  max?: number;
-  /** potongan tetap */
-  flat?: number;
-  /** minimum transaksi untuk flat */
-  min?: number;
-  /** batasi layanan tertentu (id service) */
-  only?: string[];
-  label: string;
-};
-
-export const VOUCHERS: Record<string, Voucher> = {
-  LUDOBARU: {
-    pct: 20,
-    max: 20000,
-    only: ["pulsa", "data", "pln"],
-    label: "Cashback 20% (maks. Rp20.000)",
-  },
-  HEMAT5: {
-    flat: 5000,
-    min: 50000,
-    label: "Potongan Rp5.000 min. Rp50.000",
-  },
 };
 
 export type Operator = {
@@ -55,6 +13,7 @@ export type Operator = {
   prefixes: string[];
 };
 
+/** Daftar operator tetap di kode; ini data statis, bukan katalog dashboard. */
 export const OPERATORS: Operator[] = [
   {
     name: "Telkomsel",

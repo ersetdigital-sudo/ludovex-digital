@@ -1,155 +1,89 @@
+import type { IconName } from "@/components/icon";
+
 export type Tone = "blue" | "purple" | "green" | "peach";
 
-/** [nama produk, harga] */
-export type ProductItem = [string, number];
+/** [nama, harga jual, id produk database] */
+export type ProductItem = [nama: string, harga: number, id?: string];
+
+export type ServiceInputField = {
+  key: string;
+  label: string;
+  placeholder?: string;
+  wajib: boolean;
+};
 
 export type Service = {
-  /** id internal (dipakai voucher, penyimpanan, deteksi operator) */
+  /** slug database, dipakai untuk route & penyimpanan UI */
   id: string;
-  /** slug url, contoh: inet -> /internet */
+  /** UUID service di database, dipakai untuk RPC */
+  dbId: string;
   route: string;
   name: string;
   tone: Tone;
-  /** label input */
+  icon: IconName;
   field: string;
   placeholder: string;
+  inputFields: ServiceInputField[];
   items?: ProductItem[];
-  /** layanan tagihan (cek tagihan dulu, bukan pilih nominal) */
   bill?: boolean;
 };
 
-export const SERVICES: Service[] = [
-  {
-    id: "pulsa",
-    route: "pulsa",
-    name: "Pulsa",
-    tone: "blue",
-    field: "Nomor HP",
-    placeholder: "08xx xxxx xxxx",
-    items: [
-      ["Pulsa 10.000", 11500],
-      ["Pulsa 25.000", 26000],
-      ["Pulsa 50.000", 50500],
-      ["Pulsa 100.000", 99000],
-    ],
-  },
-  {
-    id: "data",
-    route: "data",
-    name: "Paket Data",
-    tone: "purple",
-    field: "Nomor HP",
-    placeholder: "08xx xxxx xxxx",
-    items: [
-      ["5 GB / 30 hari", 35000],
-      ["12 GB / 30 hari", 60000],
-      ["25 GB / 30 hari", 95000],
-      ["Unlimited Harian", 120000],
-    ],
-  },
-  {
-    id: "pln",
-    route: "pln",
-    name: "Token PLN",
-    tone: "green",
-    field: "ID Pelanggan / No. Meter",
-    placeholder: "11 digit nomor meter",
-    items: [
-      ["Token 20.000", 21500],
-      ["Token 50.000", 51500],
-      ["Token 100.000", 101500],
-      ["Token 200.000", 201500],
-    ],
-  },
-  {
-    id: "pdam",
-    route: "pdam",
-    name: "PDAM",
-    tone: "peach",
-    field: "Nomor Pelanggan",
-    placeholder: "Nomor pelanggan PDAM",
-    bill: true,
-  },
-  {
-    id: "bpjs",
-    route: "bpjs",
-    name: "BPJS",
-    tone: "blue",
-    field: "Nomor VA Keluarga",
-    placeholder: "8888 xxxx xxxx xxxx",
-    bill: true,
-  },
-  {
-    id: "inet",
-    route: "internet",
-    name: "Internet & TV",
-    tone: "purple",
-    field: "ID Pelanggan",
-    placeholder: "ID pelanggan provider",
-    bill: true,
-  },
-  {
-    id: "wallet",
-    route: "ewallet",
-    name: "E-Wallet",
-    tone: "green",
-    field: "Nomor HP terdaftar",
-    placeholder: "08xx xxxx xxxx",
-    items: [
-      ["Top up 50.000", 51000],
-      ["Top up 100.000", 101000],
-      ["Top up 200.000", 201000],
-      ["Top up 500.000", 501000],
-    ],
-  },
-  {
-    id: "fin",
-    route: "multifinance",
-    name: "Multifinance",
-    tone: "peach",
-    field: "Nomor Kontrak",
-    placeholder: "Nomor kontrak cicilan",
-    bill: true,
-  },
-];
+/** Tone warna tetap di kode (bagian desain, bukan data bisnis). */
+export const TONES: Tone[] = ["blue", "purple", "green", "peach"];
 
-export const serviceById = (id?: string | null) =>
-  SERVICES.find((s) => s.id === id) ?? null;
+export const SERVICE_TONES: Record<string, Tone> = {
+  pulsa: "blue",
+  data: "purple",
+  pln: "green",
+  pdam: "peach",
+  bpjs: "blue",
+  internet: "purple",
+  ewallet: "green",
+  multifinance: "peach",
+};
 
-export const serviceByRoute = (route?: string | null) =>
-  SERVICES.find((s) => s.route === route) ?? null;
+export const SERVICE_ICONS: Record<string, IconName> = {
+  pulsa: "pulsa",
+  data: "data",
+  pln: "pln",
+  pdam: "pdam",
+  bpjs: "bpjs",
+  internet: "inet",
+  ewallet: "wallet",
+  multifinance: "fin",
+};
 
-/** terima id ("inet") atau slug url ("internet") */
-export const resolveService = (value?: string | null) =>
-  serviceById(value) ?? serviceByRoute(value);
+export const DEFAULT_SERVICE_ICON: IconName = "wallet";
 
-/** dipakai tombol "cegah typo" di homepage */
-export const routeOf = (id: string) => serviceById(id)?.route ?? "bayar";
+export function toneForService(slug: string, index = 0): Tone {
+  return SERVICE_TONES[slug] ?? TONES[index % TONES.length];
+}
 
-/** populer di homepage: [label, sub, harga, route] */
-export const POPULAR = [
-  {
-    icon: "pulsa" as const,
-    tone: "blue" as Tone,
-    title: "Pulsa 50.000",
-    sub: "Semua operator",
-    price: "Rp50.500",
-    route: "pulsa",
-  },
-  {
-    icon: "data" as const,
-    tone: "purple" as Tone,
-    title: "Data 12 GB",
-    sub: "Aktif 30 hari",
-    price: "Rp60.000",
-    route: "data",
-  },
-  {
-    icon: "pln" as const,
-    tone: "green" as Tone,
-    title: "Token PLN 100.000",
-    sub: "Token langsung masuk",
-    price: "Rp101.500",
-    route: "pln",
-  },
-];
+export function iconForService(slug: string): IconName {
+  return SERVICE_ICONS[slug] ?? DEFAULT_SERVICE_ICON;
+}
+
+export function findService(services: Service[], value?: string | null): Service | null {
+  if (!value) return null;
+  const needle = value.toLowerCase();
+  return (
+    services.find(
+      (service) =>
+        service.id === value ||
+        service.route === value ||
+        service.id.toLowerCase() === needle ||
+        service.route.toLowerCase() === needle,
+    ) ?? null
+  );
+}
+
+export function findServiceByRoute(
+  services: Service[],
+  route?: string | null,
+): Service | null {
+  return findService(services, route);
+}
+
+export function routeOf(services: Service[], id: string): string {
+  return findService(services, id)?.route ?? "bayar";
+}
